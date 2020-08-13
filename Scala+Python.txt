@@ -1,0 +1,1779 @@
+scala>initial_data.show
+scala>initial_data.printSchema
+scala>initial_data.filter("date1>'26-04-2009'").show
+scala>intial_data.withColumn("fdate",unix.timestamp(col("date1","dd-MM-yyyy))).show
+scala>intial_data.withColumn("fdate",unix_timestamp(col("date1),"dd-MM-yyyy").cast(org.apache.spark.sql.types.TimestampType)).show
+scala>initial_data
+scala>formatted
+scala>initial_data.filter("fdate>'26-04-2020'").show
+scala>foormatted_data.agg(max(col("fdate"))).show
+scala>formatted_data.filter("fdate>'2020-04-25'").show
+scala>formatted.data.filter("country='US'").show
+scala>formatted.data.filter("country='US'").sort(col("fdate")show
+scala>formatted.data.groupBy("country").agg(max(col("confirmed_cases"))).show
+scala>formatted_data.groupBy("country").agg(max(col("confirmed_cases")).as("current_count")).sort(desc("current_count")).show
+scala>formatted_data.groupBy("fdate").pivot("country",seq
+scala>formatted_data.agg(mean
+
+
+Zeppelin:=>we can create a graph and more analysis
+
+Django recording link:=>
+https://www.tutorialspoint.com/django/django_admin_interface.htm
+https://mail.google.com/mail/u/0/#search/Django+recording/FMfcgxwJWhrfdcNMFFvDcrmtnWBzrdfp
+
+https://shortcutworld.com/PyCharm/win/JetBrains-PyCharm_Shortcuts
+
+
+https://community.tableau.com/s/question/0D54T00000CWeX8SAL/sample-superstore-sales-excelxls
+
+A: https://community.tableau.com/s/question/0D54T00000CWeX8SAL/sample-superstore-sales-excelxls
+
+**************************** TRU Data Summary****************************************************
+
+import sys
+import pyodbc
+import xlsxwriter
+
+import subprocess as sp
+sp.call('cls',shell=True)
+
+print("                                         ------------------------------------------------------")
+print("                                         |                                                     |")
+print("                                         |     Monthly TRU Data - Data Summary                 |")
+print("                                         |                                                     |")
+print("                                         -------------------------------------------------------")                                 
+
+From_dt=input('Please enter From Date YYYYMMDD:')
+To_dt=input('Please enter To Date YYYYMMDD:')
+
+def getMonth(x):
+        switcher={
+                
+                '01':'January',
+                '02':'February',
+                '03':'March',
+                '04':'April ',
+                '05':'May',
+                '06':'June',
+                '07':'July',
+                '08':'August',
+                '09':'September', 
+                '10':'October',
+                '11':'November' ,
+                '12':'December'
+                }     
+        return switcher.get(x)
+    
+FromYear=From_dt[0:][:4]
+FromMonth=getMonth(From_dt[4:][:2])
+FromDay=From_dt[7:][:2]
+ToYear=To_dt[0:][:4]
+ToMonth=getMonth(To_dt[4:][:2])
+ToDay=To_dt[6:][:2]
+
+
+FileNm='Data_Summary_'+FromMonth+FromYear+'.xlsx'
+Path="C:\Python_TRU_Reports\Monthly\\"
+
+print("Output FileName: "+Path+FileNm)
+
+wb = xlsxwriter.Workbook(Path+FileNm)
+
+################## Create "Note" Worksheet
+sheet1 = wb.add_worksheet('Note')
+cell_format = wb.add_format()
+
+cell_format = wb.add_format()
+
+note_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+   'fg_color': '#B3B6B7',
+    'font_size':'11'})
+title_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'11'})
+ColumnHead_format = wb.add_format({
+    'bold': 10,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'10',
+    'text_wrap':1})
+Num_format = wb.add_format({'border': 1,'num_format':'0.00'})
+date_format = wb.add_format({'border': 1,'num_format': 'dd-mm-yyyy'})
+cell_format = wb.add_format({'border': 1,})
+
+sheet1.merge_range('B2:K2','Data has been extracted for the period mentioned in format sheet',note_format)
+
+################## Create Data "Summary" Worksheet
+sheet2 = wb.add_worksheet('Summary')
+
+sheet2.merge_range('A1:L1', 'Customs(Import) - BCD Rate Wise data (For Home consumption & Ex-Bond) for ' + FromMonth + '-' + FromYear   , title_format)
+
+sheet2.write('A2:A2','S.No.',ColumnHead_format)
+sheet2.set_column(0, 0, 5)
+sheet2.write('B2:B2','BCD Rate',ColumnHead_format)
+sheet2.write('C2:C2','Assessable Value (In Rs. Crore)',ColumnHead_format)
+sheet2.write('D2:D2','Total Duty Payable (In Rs. Crore)',ColumnHead_format)
+sheet2.write('E2:E2','BCD Payable (In Rs. Crore)',ColumnHead_format)
+sheet2.write('F2:F2','BCD Foregone (In Rs. Crore)',ColumnHead_format)
+sheet2.write('G2:G2','IGST Payable (In Rs. Crore)',ColumnHead_format)
+sheet2.write('H2:H2','IGST Foregone (In Rs. Crore)',ColumnHead_format)
+sheet2.write('I2:I2','Total Duty Forgone (In Rs. Crore)',ColumnHead_format)
+sheet2.write('J2:J2','SAPT Foregone (In Rs. Crore)',ColumnHead_format)
+sheet2.write('K2:K2','DEPB_BCD Amount Foregone (In Rs. Crore)',ColumnHead_format)
+sheet2.write('L2:L2','DEPB_CVD Amount Foregone (In Rs. Crore)',ColumnHead_format)
+sheet2.set_column(1, 11, 14)
+
+print("Connecting to SmartView")
+cnxn = pyodbc.connect("DSN=smartview_c")
+cursor1 = cnxn.cursor()
+print("Running query")
+cursor1.execute("SELECT A.BCD_RTA_A,SUM(isnull(A.ASSESS_VAL_A,0))/10000000 AS ASSESS_VAL_A,SUM(A.DUTY_A)/10000000 AS DUTY_A,SUM(A.BCD_AMT_A)/10000000 AS BCD_AMT_A,SUM(A.BCD_AMT_FG_A)/10000000 AS BCD_AMT_FG_A,sum(isnull(a.IGST_AMT_A,0))/10000000 as IGST_AMT_A,sum(isnull(a.IGST_AMT_FG_A,0))/10000000 as IGST_AMT_FG_A,sum(isnull(a.DUTY_FG_A,0))/10000000 as Total_Duty_Foregone,sum(isnull (a.SAPT_AMT_FG_A,0))/10000000 as SAPT_Foregone,sum(isnull(a.DEPB_BCD_AMT_FG,0))/10000000 as DEPB_BCD_Amount_Foregone,SUM(isnull(a.DEPB_CVD_AMT_FG,0))/10000000 as DEPB_CVD_Amount_Foregone FROM DWUSER.FACT_IMP_BE_ITEM_DET_T A,DWUSER.FACT_IMP_BE_T B WHERE A.DW_BE_KEY = B.DW_BE_KEY AND   B.TYP IN('H', 'X') AND A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " GROUP BY A.BCD_RTA_A ORDER BY A.BCD_RTA_A")
+print("Writing data to output file")
+
+cnt=0
+rno=2
+for r in cursor1:
+    cnt = cnt + 1
+    sheet2.write(rno, 0, cnt,cell_format)
+    for c in range(11):
+        if (c >= 0 and c <= 11):
+            if(r[c]==None):
+                sheet2.write(rno, c+1, '--',Num_format)
+            else:
+                sheet2.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet2.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+
+cursor1.close()
+cnxn.close()
+wb.close()
+
+print("End of Run")
+
+
+
+
+***************************TRU_Export_Data******************************************************
+
+import sys
+import pyodbc
+import xlsxwriter
+
+import subprocess as sp
+sp.call('cls',shell=True)
+
+print("                                         ------------------------------------------------------ ")
+print("                                         |                                                     |")
+print("                                         | Monthly TRU Data - Export     |")
+print("                                         |                                                     |")
+print("                                         -------------------------------------------------------")                                 
+
+From_dt=input('Please enter From Date YYYYMMDD:')
+To_dt=input('Please enter To Date YYYYMMDD:')
+
+def getMonth(x):
+        switcher={
+                
+                '01':'January',
+                '02':'February',
+                '03':'March',
+                '04':'April ',
+                '05':'May',
+                '06':'June',
+                '07':'July',
+                '08':'August',
+                '09':'September', 
+                '10':'October',
+                '11':'November' ,
+                '12':'December'
+                }     
+        return switcher.get(x)
+    
+FromYear=From_dt[0:][:4]
+FromMonth=getMonth(From_dt[4:][:2])
+FromDay=From_dt[7:][:2]
+ToYear=To_dt[0:][:4]
+ToMonth=getMonth(To_dt[4:][:2])
+ToDay=To_dt[6:][:2]
+
+
+FileNm='Data_Export_'+FromMonth+FromYear+'.xlsx'
+Path="C:\Python_TRU_Reports\Monthly\\"
+
+print("Output FileName: "+Path+FileNm)
+
+wb = xlsxwriter.Workbook(Path+FileNm)
+
+################## Create "Note" Worksheet
+sheet1 = wb.add_worksheet('Note')
+cell_format = wb.add_format()
+
+cell_format = wb.add_format()
+
+note_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+   'fg_color': '#B3B6B7',
+    'font_size':'11'})
+title_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'11'})
+ColumnHead_format = wb.add_format({
+    'bold': 10,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'10',
+    'text_wrap':1})
+Num_format = wb.add_format({'border': 1,'num_format':'0.00'})
+date_format = wb.add_format({'border': 1,'num_format': 'dd-mm-yyyy'})
+cell_format = wb.add_format({'border': 1,})
+
+sheet1.merge_range('B2:K2','Data has been extracted for the period mentioned in format sheet',note_format)
+
+Sql= "select b.SCHEME_CD_A,b.RITC_CODE_A as RITC_Code,cd.cntry_nm CountryOfDest,sum(b.quantity_a) as quantity,b.qty_units_a as unit,sum(isnull(b.FOB_VAL_RS_A,0))/10000000 as Value, \
+sum(ISNULL(b.DBK_VAL_A,0))/10000000 as Drawback_Amount,CESS_RATE_A as RATE,sum(ISNULL(b.CESS_AMT_A,0))/10000000 as duty,sum(ISNULL(b.IGST_Amt,0))/10000000 as IGST_Refund_Claimed \
+into #temp from \
+DWUSER.FACT_EXP_SB_T a,DWUSER.FACT_EXP_SB_ITEMS_T b ,DWUSER.DIM_CNTRY_CD CD where a.DW_SB_NO_KEY = b.DW_SB_NO_KEY and cd.DW_CNTRY_CD = a.DW_CON_DES_KEY \
+and b.LEO_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " group by b.SCHEME_CD_A,RITC_Code,cd.cntry_nm,unit,RATE \
+order by b.SCHEME_CD_A,RITC_Code,cd.cntry_nm,unit,RATE "
+
+Sql2="select SCHEME_CD_A,left(RITC_Code,2) as cth,CountryOfDest,sum(quantity) as quantity,unit,sum(value) as value,sum(Drawback_Amount) as Drawback_Amount,RATE,sum(duty) as duty,sum(IGST_Refund_Claimed) as IGST_Refund_Claimed from #temp GROUP BY SCHEME_CD_A,cth,CountryOfDest,unit,RATE ORDER BY SCHEME_CD_A,cth,CountryOfDest,unit,RATE"
+Sql4="select SCHEME_CD_A,left(RITC_Code,4) as cth,CountryOfDest,sum(quantity) as quantity,unit,sum(value) as value,sum(Drawback_Amount) as Drawback_Amount,RATE,sum(duty) as duty,sum(IGST_Refund_Claimed) as IGST_Refund_Claimed from #temp GROUP BY SCHEME_CD_A,cth,CountryOfDest,unit,RATE ORDER BY SCHEME_CD_A,cth,CountryOfDest,unit,RATE"
+Sql6="select SCHEME_CD_A,left(RITC_Code,6) as cth,CountryOfDest,sum(quantity) as quantity,unit,sum(value) as value,sum(Drawback_Amount) as Drawback_Amount,RATE,sum(duty) as duty,sum(IGST_Refund_Claimed) as IGST_Refund_Claimed from #temp GROUP BY SCHEME_CD_A,cth,CountryOfDest,unit,RATE ORDER BY SCHEME_CD_A,cth,CountryOfDest,unit,RATE"
+Sql8="select SCHEME_CD_A,left(RITC_Code,8) as cth,CountryOfDest,sum(quantity) as quantity,unit,sum(value) as value,sum(Drawback_Amount) as Drawback_Amount,RATE,sum(duty) as duty,sum(IGST_Refund_Claimed) as IGST_Refund_Claimed from #temp GROUP BY SCHEME_CD_A,cth,CountryOfDest,unit,RATE ORDER BY SCHEME_CD_A,cth,CountryOfDest,unit,RATE"
+
+print("Writing to Query file")
+#file = open(Path+QryFile,"w") 
+
+################## Create Data "Summary" Worksheet for CTH2
+sheet2 = wb.add_worksheet('CTH2')
+
+sheet2.merge_range('A1:K1', 'CTH-wise Export details at 2 CTH level for period ' + FromDay +' '+ FromMonth + '-' + FromYear + ' to ' + ToDay+ ' '+ ToMonth + '-' + ToYear , title_format)
+					 
+sheet2.write('A2:A2','S.No.',ColumnHead_format)
+sheet2.set_column(0, 0, 5)
+sheet2.write('B2:B2','Export Promotion Scheme Code ',ColumnHead_format)
+sheet2.write('C2:C2','CTH 2 Digit',ColumnHead_format)
+sheet2.write('D2:D2','Country of Export',ColumnHead_format)
+sheet2.write('E2:E2','Total Quantity',ColumnHead_format)
+sheet2.write('F2:F2','Quantity Unit',ColumnHead_format)
+sheet2.write('G2:G2','FOB Value (in Rs. Crore)',ColumnHead_format)
+sheet2.write('H2:H2','Drawback Value /Incentive under Export Promotion Scheme received (in Rs. Crore), if any (for exp incentive under Drawback)',ColumnHead_format)
+sheet2.write('I2:I2','Rate of Export Duty, if any',ColumnHead_format)
+sheet2.write('J2:J2','Customs Duty payable (in Rs. Crore), if any',ColumnHead_format)
+sheet2.write('K2:K2','IGST paid that is claimed as refund (in Rs. Crore)',ColumnHead_format)
+						
+sheet2.set_column(0, 1, 10)
+sheet2.set_column(2, 2, 9)
+sheet2.set_column(3, 3, 46)
+sheet2.set_column(4, 4, 12)
+sheet2.set_column(5, 6, 10)
+sheet2.set_column(7, 7, 20)
+sheet2.set_column(8, 10, 10)
+
+print("Connecting to SmartView for CTH2")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query for CTH2")
+cursor1.execute(Sql)
+cursor1.execute(Sql2)
+print("Writing data to output file for CTH2")
+
+cnt=0
+rno=2
+for r in cursor1:
+    cnt = cnt + 1
+    sheet2.write(rno, 0, cnt,cell_format)
+    for c in range(10):
+             
+        if(r[c]==None):
+                sheet2.write(rno, c+1, '--',Num_format)
+        elif(c==3 or c > 4):
+                sheet2.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet2.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+
+#cursor1.close()
+#cnxn.close()
+
+################## Create Data "Summary" Worksheet
+sheet3 = wb.add_worksheet('CTH4')
+
+sheet3.merge_range('A1:K1', 'CTH-wise Export details at 4 CTH level for period '  + FromDay +' '+ FromMonth + '-' + FromYear + ' to ' + ToDay+ ' '+ ToMonth + '-' + ToYear , title_format)
+					 
+sheet3.write('A2:A2','S.No.',ColumnHead_format)
+sheet3.set_column(0, 0, 5)
+sheet3.write('B2:B2','Export Promotion Scheme Code ',ColumnHead_format)
+sheet3.write('C2:C2','CTH 4 Digit',ColumnHead_format)
+sheet3.write('D2:D2','Country of Export',ColumnHead_format)
+sheet3.write('E2:E2','Total Quantity',ColumnHead_format)
+sheet3.write('F2:F2','Quantity Unit',ColumnHead_format)
+sheet3.write('G2:G2','FOB Value (in Rs. Crore)',ColumnHead_format)
+sheet3.write('H2:H2','Drawback Value /Incentive under Export Promotion Scheme received (in Rs. Crore), if any (for exp incentive under Drawback)',ColumnHead_format)
+sheet3.write('I2:I2','Rate of Export Duty, if any',ColumnHead_format)
+sheet3.write('J2:J2','Customs Duty payable (in Rs. Crore), if any',ColumnHead_format)
+sheet3.write('K2:K2','IGST paid that is claimed as refund (in Rs. Crore)',ColumnHead_format)
+
+					
+sheet3.set_column(0, 1, 10)
+sheet3.set_column(2, 2, 9)
+sheet3.set_column(3, 3, 46)
+sheet3.set_column(4, 4, 12)
+sheet3.set_column(5, 6, 10)
+sheet3.set_column(7, 7, 20)
+sheet3.set_column(8, 10, 10)
+
+print("Connecting to SmartView for CTH4")
+#cnxn = pyodbc.connect("DSN=smartview_w1")
+#cursor1 = cnxn.cursor()
+print("Running query for CTH4")
+#cursor1.execute(Sql)
+cursor1.execute(Sql4)
+print("Writing data to output file for CTH4")
+
+cnt=0
+rno=2
+for r in cursor1:
+    cnt = cnt + 1
+    sheet3.write(rno, 0, cnt,cell_format)
+    for c in range(10):
+             
+        if(r[c]==None):
+                sheet3.write(rno, c+1, '--',Num_format)
+        elif(c==3 or c > 4):
+                sheet3.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet3.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+     
+
+#cursor1.close()
+#cnxn.close()
+
+################## Create Data "Summary" Worksheet
+sheet4 = wb.add_worksheet('CTH6')
+
+sheet4.merge_range('A1:K1', 'CTH-wise Export details at 6 CTH level for period ' + FromDay +' '+ FromMonth + '-' + FromYear + ' to ' + ToDay+ ' '+ ToMonth + '-' + ToYear , title_format)
+					 
+sheet4.write('A2:A2','S.No.',ColumnHead_format)
+sheet4.set_column(0, 0, 5)
+sheet4.write('B2:B2','Export Promotion Scheme Code ',ColumnHead_format)
+sheet4.write('C2:C2','CTH 6 Digit',ColumnHead_format)
+sheet4.write('D2:D2','Country of Export',ColumnHead_format)
+sheet4.write('E2:E2','Total Quantity',ColumnHead_format)
+sheet4.write('F2:F2','Quantity Unit',ColumnHead_format)
+sheet4.write('G2:G2','FOB Value (in Rs. Crore)',ColumnHead_format)
+sheet4.write('H2:H2','Drawback Value /Incentive under Export Promotion Scheme received (in Rs. Crore), if any (for exp incentive under Drawback)',ColumnHead_format)
+sheet4.write('I2:I2','Rate of Export Duty, if any',ColumnHead_format)
+sheet4.write('J2:J2','Customs Duty payable (in Rs. Crore), if any',ColumnHead_format)
+sheet4.write('K2:K2','IGST paid that is claimed as refund (in Rs. Crore)',ColumnHead_format)
+
+					
+sheet4.set_column(0, 1, 10)
+sheet4.set_column(2, 2, 9)
+sheet4.set_column(3, 3, 46)
+sheet4.set_column(4, 4, 12)
+sheet4.set_column(5, 6, 10)
+sheet4.set_column(7, 7, 20)
+sheet4.set_column(8, 10, 10)
+
+print("Connecting to SmartView for CTH6")
+#cnxn = pyodbc.connect("DSN=smartview_w1")
+#cursor1 = cnxn.cursor()
+print("Running query for CTH6")
+#cursor1.execute(Sql)
+cursor1.execute(Sql6)
+print("Writing data to output file for CTH6")
+
+cnt=0
+rno=2
+for r in cursor1:
+    cnt = cnt + 1
+    sheet4.write(rno, 0, cnt,cell_format)
+    for c in range(10):
+             
+        if(r[c]==None):
+                sheet4.write(rno, c+1, '--',Num_format)
+        elif(c==3 or c > 4):
+                sheet4.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet4.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+
+#cursor1.close()
+#cnxn.close()
+
+################## Create Data "Summary" Worksheet
+sheet5 = wb.add_worksheet('CTH8')
+
+sheet5.merge_range('A1:K1', 'CTH-wise Export details at 8 CTH level for period ' + FromDay +' '+ FromMonth + '-' + FromYear + ' to ' + ToDay+ ' '+ ToMonth + '-' + ToYear , title_format)
+					 
+sheet5.write('A2:A2','S.No.',ColumnHead_format)
+sheet5.set_column(0, 0, 5)
+sheet5.write('B2:B2','Export Promotion Scheme Code ',ColumnHead_format)
+sheet5.write('C2:C2','CTH 8 Digit',ColumnHead_format)
+sheet5.write('D2:D2','Country of Export',ColumnHead_format)
+sheet5.write('E2:E2','Total Quantity',ColumnHead_format)
+sheet5.write('F2:F2','Quantity Unit',ColumnHead_format)
+sheet5.write('G2:G2','FOB Value (in Rs. Crore)',ColumnHead_format)
+sheet5.write('H2:H2','Drawback Value /Incentive under Export Promotion Scheme received (in Rs. Crore), if any (for exp incentive under Drawback)',ColumnHead_format)
+sheet5.write('I2:I2','Rate of Export Duty, if any',ColumnHead_format)
+sheet5.write('J2:J2','Customs Duty payable (in Rs. Crore), if any',ColumnHead_format)
+sheet5.write('K2:K2','IGST paid that is claimed as refund (in Rs. Crore)',ColumnHead_format)
+
+					
+sheet5.set_column(0, 1, 10)
+sheet5.set_column(2, 2, 9)
+sheet5.set_column(3, 3, 46)
+sheet5.set_column(4, 4, 12)
+sheet5.set_column(5, 6, 10)
+sheet5.set_column(7, 7, 20)
+sheet5.set_column(8, 10, 10)
+
+print("Connecting to SmartView for CTH8")
+#cnxn = pyodbc.connect("DSN=smartview_w1")
+#cursor1 = cnxn.cursor()
+print("Running query for CTH8")
+#cursor1.execute(Sql)
+cursor1.execute(Sql8)
+print("Writing data to output file for CTH8")
+
+cnt=0
+rno=2
+for r in cursor1:
+    cnt = cnt + 1
+    sheet5.write(rno, 0, cnt,cell_format)
+    for c in range(10):
+             
+        if(r[c]==None):
+                sheet5.write(rno, c+1, '--',Num_format)
+        elif(c==3 or c > 4):
+                sheet5.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet5.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+
+cursor1.close()
+cnxn.close()
+wb.close()
+
+print("End of Run")
+
+
+*********************************** TRU-IGST-Reprt**************************************
+import sys
+import os
+import pyodbc
+import xlsxwriter
+
+
+import subprocess as sp
+sp.call('cls',shell=True)
+
+print("  ------------------------------------------------------")
+print("  |                                                     |")
+print("  |     Quarterly TRU Data - IGST                       |")
+print("  |                                                     |")
+print("  -------------------------------------------------------")                                 
+
+From_dt=input('Please enter From Date YYYYMMDD:')
+To_dt=input('Please enter To Date YYYYMMDD:')
+TicketNo=input('Please enter Ticket No. IM00XXXXXX:')
+
+def getMonth(x):
+    switcher={'01':'January','02':'February','03':'March','04':'April ','05':'May','06':'June','07':'July','08':'August','09':'September', '10':'October','11':'November' ,'12':'December'}     
+    return switcher.get(x)
+    
+FromYear=From_dt[0:][:4]
+FromMonth=getMonth(From_dt[4:][:2])
+FromDay=From_dt[6:][:2]
+ToYear=To_dt[0:][:4]
+ToMonth=getMonth(To_dt[4:][:2])
+ToDay=To_dt[6:][:2]
+
+
+FileNm='Data_IGST_'+FromMonth+FromYear+'_'+ToMonth+ToYear+'.xlsx'
+QryFile='Query_IGST.txt'
+Path='C:\Python_TRU_Reports\Monthly\\'+TicketNo+'\\'
+print("Output FileName: "+Path+FileNm)
+print("Query FileName: "+Path+QryFile)
+
+if not os.path.exists(Path):
+    os.makedirs(Path)
+    
+Sql2= "SELECT LEFT(A.CTH_A,2) CTH, D.DUTY_RTA, SUM(A.ASSESS_VAL_A)/10000000 AS VAL, SUM(A.DUTY_A)/10000000 AS DUTY, SUM(A.IGST_AMT_A)/10000000 AS IGST, SUM(ISNULL(A.CESS_AMT_A,0))/10000000 AS CESS_PAYABLE, SUM(A.IGST_AMT_FG_A)/10000000 AS IGST_FG, SUM(ISNULL(A.CESS_AMT_FG_A,0))/10000000 AS CESS_DUTY_FOREGONE FROM  DWUSER.FACT_IMP_BE_ITEM_DET_T A INNER JOIN DWUSER.FACT_IMP_BE_T B ON A.DW_BE_KEY = B.DW_BE_KEY LEFT OUTER JOIN (SELECT DISTINCT BE_NO, BE_DT, CUS_SITE, INV_NO, ITEM_NO, DUTY_RTA FROM ODSUSER.ICES_IMP_BE_DUTY WHERE DUTY_DESC='IGST' AND STATUS_FLAG = 'C') D ON A.BE_NO = D.BE_NO AND A.BE_DT = D.BE_DT AND A.CUS_SITE = D.CUS_SITE AND A.INV_NO = D.INV_NO AND A.ITEM_NO = D.ITEM_NO WHERE    B.TYP IN('H', 'X') AND  A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ "  GROUP BY CTH, D.DUTY_RTA ORDER BY CTH, D.DUTY_RTA;"
+Sql4= "SELECT LEFT(A.CTH_A,4) CTH, D.DUTY_RTA, SUM(A.ASSESS_VAL_A)/10000000 AS VAL, SUM(A.DUTY_A)/10000000 AS DUTY, SUM(A.IGST_AMT_A)/10000000 AS IGST, SUM(ISNULL(A.CESS_AMT_A,0))/10000000 AS CESS_PAYABLE, SUM(A.IGST_AMT_FG_A)/10000000 AS IGST_FG, SUM(ISNULL(A.CESS_AMT_FG_A,0))/10000000 AS CESS_DUTY_FOREGONE FROM  DWUSER.FACT_IMP_BE_ITEM_DET_T A INNER JOIN DWUSER.FACT_IMP_BE_T B ON A.DW_BE_KEY = B.DW_BE_KEY LEFT OUTER JOIN (SELECT DISTINCT BE_NO, BE_DT, CUS_SITE, INV_NO, ITEM_NO, DUTY_RTA FROM ODSUSER.ICES_IMP_BE_DUTY WHERE DUTY_DESC='IGST' AND STATUS_FLAG = 'C') D ON A.BE_NO = D.BE_NO AND A.BE_DT = D.BE_DT AND A.CUS_SITE = D.CUS_SITE AND A.INV_NO = D.INV_NO AND A.ITEM_NO = D.ITEM_NO WHERE    B.TYP IN('H', 'X') AND  A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ "  GROUP BY CTH, D.DUTY_RTA ORDER BY CTH, D.DUTY_RTA;"
+Sql6= "SELECT LEFT(A.CTH_A,6) CTH, D.DUTY_RTA, SUM(A.ASSESS_VAL_A)/10000000 AS VAL, SUM(A.DUTY_A)/10000000 AS DUTY, SUM(A.IGST_AMT_A)/10000000 AS IGST, SUM(ISNULL(A.CESS_AMT_A,0))/10000000 AS CESS_PAYABLE, SUM(A.IGST_AMT_FG_A)/10000000 AS IGST_FG, SUM(ISNULL(A.CESS_AMT_FG_A,0))/10000000 AS CESS_DUTY_FOREGONE FROM  DWUSER.FACT_IMP_BE_ITEM_DET_T A INNER JOIN DWUSER.FACT_IMP_BE_T B ON A.DW_BE_KEY = B.DW_BE_KEY LEFT OUTER JOIN (SELECT DISTINCT BE_NO, BE_DT, CUS_SITE, INV_NO, ITEM_NO, DUTY_RTA FROM ODSUSER.ICES_IMP_BE_DUTY WHERE DUTY_DESC='IGST' AND STATUS_FLAG = 'C') D ON A.BE_NO = D.BE_NO AND A.BE_DT = D.BE_DT AND A.CUS_SITE = D.CUS_SITE AND A.INV_NO = D.INV_NO AND A.ITEM_NO = D.ITEM_NO WHERE    B.TYP IN('H', 'X') AND  A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ "  GROUP BY CTH, D.DUTY_RTA ORDER BY CTH, D.DUTY_RTA;"
+Sql8= "SELECT A.CTH_A CTH, D.DUTY_RTA, SUM(A.ASSESS_VAL_A)/10000000 AS VAL, SUM(A.DUTY_A)/10000000 AS DUTY, SUM(A.IGST_AMT_A)/10000000 AS IGST, SUM(ISNULL(A.CESS_AMT_A,0))/10000000 AS CESS_PAYABLE, SUM(A.IGST_AMT_FG_A)/10000000 AS IGST_FG, SUM(ISNULL(A.CESS_AMT_FG_A,0))/10000000 AS CESS_DUTY_FOREGONE FROM  DWUSER.FACT_IMP_BE_ITEM_DET_T A INNER JOIN DWUSER.FACT_IMP_BE_T B ON A.DW_BE_KEY = B.DW_BE_KEY LEFT OUTER JOIN (SELECT DISTINCT BE_NO, BE_DT, CUS_SITE, INV_NO, ITEM_NO, DUTY_RTA FROM ODSUSER.ICES_IMP_BE_DUTY WHERE DUTY_DESC='IGST' AND STATUS_FLAG = 'C') D ON A.BE_NO = D.BE_NO AND A.BE_DT = D.BE_DT AND A.CUS_SITE = D.CUS_SITE AND A.INV_NO = D.INV_NO AND A.ITEM_NO = D.ITEM_NO WHERE    B.TYP IN('H', 'X') AND  A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ "  GROUP BY CTH, D.DUTY_RTA ORDER BY CTH, D.DUTY_RTA;"
+
+print("Writing to Query file")
+file = open(Path+QryFile,"w") 
+file.write(Sql2)
+file.write("\n")
+file.write("-----------------------------------------------------------------------------------------")
+file.write("\n")
+file.close()
+
+file = open(Path+QryFile,"a") 
+file.write (Sql4)
+file.write("\n")
+file.write("-----------------------------------------------------------------------------------------")
+file.write("\n")
+file.write (Sql6)
+file.write("\n")
+file.write("-----------------------------------------------------------------------------------------")
+file.write("\n")
+file.write (Sql8)
+file.write("\n")
+file.write("-----------------------------------------------------------------------------------------")
+file.close()
+
+wb = xlsxwriter.Workbook(Path+FileNm)
+
+################## Create "Note" Worksheet
+sheet1 = wb.add_worksheet('Note')
+cell_format = wb.add_format()
+
+cell_format = wb.add_format()
+
+note_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+   'fg_color': '#B3B6B7',
+    'font_size':'11'})
+title_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'11'})
+ColumnHead_format = wb.add_format({
+    'bold': 10,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'10',
+    'text_wrap':1})
+Num_format = wb.add_format({'border': 1,'num_format':'0.00'})
+date_format = wb.add_format({'border': 1,'num_format': 'dd-mm-yyyy'})
+cell_format = wb.add_format({'border': 1,})
+
+sheet1.merge_range('B2:K2','Data has been extracted for the period mentioned in format sheet',note_format)
+
+################## Create Data "Summary" Worksheet for CTH2
+sheet2 = wb.add_worksheet('CTH2')
+
+sheet2.merge_range('A1:I1', 'Customs (Import) - IGST Rate wise details (Home consumption & Ex-Bond) for period ' + FromMonth + '-' + FromYear + ' to ' +  ToMonth + '-' + ToYear , title_format)
+
+sheet2.merge_range('A2:D2', '', title_format)
+sheet2.merge_range('E2:G2', 'Total Duty Payable', title_format)
+sheet2.merge_range('H2:I2', '', title_format)
+sheet2.write('A3:A3','S.No.',ColumnHead_format)
+sheet2.set_column(0, 0, 5)
+sheet2.write('B3:B3','CTH [ 2 digit]',ColumnHead_format)
+sheet2.write('C3:C3','IGST  Rate',ColumnHead_format)
+sheet2.write('D3:D3','Assessable Value (In Rs. Crore)',ColumnHead_format)
+sheet2.write('E3:E3','Total IGST Duty (In Rs. Crore)',ColumnHead_format)
+sheet2.write('F3:F3','IGST Payable (In Rs. Crore)',ColumnHead_format)
+sheet2.write('G3:G3','Cess Payable (In Rs. Crore)',ColumnHead_format)
+sheet2.write('H3:H3','IGST Foregone (In Rs. Crore)',ColumnHead_format)
+sheet2.write('I3:I3','Cess Foregone (In Rs. Crore)',ColumnHead_format)
+sheet2.set_column(1, 8, 15)
+
+print("Connecting to SmartView")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query")
+cursor1.execute(Sql2)
+print("Writing data to output file for CTH2")
+
+cnt=0
+rno=3
+for r in cursor1:
+    cnt = cnt + 1
+    sheet2.write(rno, 0, cnt,cell_format)
+    for c in range(8):
+        if (c >= 0 and c <= 8):
+            if(r[c]==None):
+                sheet2.write(rno, c+1, '--',Num_format)
+            else:
+                sheet2.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet2.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+
+cursor1.close()
+cnxn.close()
+
+################## Create Data "Summary" Worksheet for CTH4
+sheet3 = wb.add_worksheet('CTH4')
+
+sheet3.merge_range('A1:I1', 'Customs (Import) - IGST Rate wise details (Home consumption & Ex-Bond) for period ' + FromMonth + '-' + FromYear + ' to ' +  ToMonth + '-' + ToYear , title_format)
+
+sheet3.merge_range('A2:D2', '', title_format)
+sheet3.merge_range('E2:G2', 'Total Duty Payable', title_format)
+sheet3.merge_range('H2:I2', '', title_format)
+sheet3.write('A3:A3','S.No.',ColumnHead_format)
+sheet3.set_column(0, 0, 5)
+sheet3.write('B3:B3','CTH [ 4 digit]',ColumnHead_format)
+sheet3.write('C3:C3','IGST  Rate',ColumnHead_format)
+sheet3.write('D3:D3','Assessable Value (In Rs. Crore)',ColumnHead_format)
+sheet3.write('E3:E3','Total IGST Duty (In Rs. Crore)',ColumnHead_format)
+sheet3.write('F3:F3','IGST Payable (In Rs. Crore)',ColumnHead_format)
+sheet3.write('G3:G3','Cess Payable (In Rs. Crore)',ColumnHead_format)
+sheet3.write('H3:H3','IGST Foregone (In Rs. Crore)',ColumnHead_format)
+sheet3.write('I3:I3','Cess Foregone (In Rs. Crore)',ColumnHead_format)
+sheet3.set_column(1, 8, 15)
+
+print("Connecting to SmartView")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query")
+cursor1.execute(Sql4)
+print("Writing data to output file for CTH4")
+
+cnt=0
+rno=3
+for r in cursor1:
+    cnt = cnt + 1
+    sheet3.write(rno, 0, cnt,cell_format)
+    for c in range(8):
+        if (c >= 0 and c <= 8):
+            if(r[c]==None):
+                sheet3.write(rno, c+1, '--',Num_format)
+            else:
+                sheet3.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet3.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+
+cursor1.close()
+cnxn.close()
+
+################## Create Data "Summary" Worksheet for CTH6
+sheet4 = wb.add_worksheet('CTH6')
+
+sheet4.merge_range('A1:I1', 'Customs (Import) - IGST Rate wise details (Home consumption & Ex-Bond) for period ' + FromMonth + '-' + FromYear + ' to ' +  ToMonth + '-' + ToYear , title_format)
+
+sheet4.merge_range('A2:D2', '', title_format)
+sheet4.merge_range('E2:G2', 'Total Duty Payable', title_format)
+sheet4.merge_range('H2:I2', '', title_format)
+sheet4.write('A3:A3','S.No.',ColumnHead_format)
+sheet4.set_column(0, 0, 5)
+sheet4.write('B3:B3','CTH [ 6 digit]',ColumnHead_format)
+sheet4.write('C3:C3','IGST  Rate',ColumnHead_format)
+sheet4.write('D3:D3','Assessable Value (In Rs. Crore)',ColumnHead_format)
+sheet4.write('E3:E3','Total IGST Duty (In Rs. Crore)',ColumnHead_format)
+sheet4.write('F3:F3','IGST Payable (In Rs. Crore)',ColumnHead_format)
+sheet4.write('G3:G3','Cess Payable (In Rs. Crore)',ColumnHead_format)
+sheet4.write('H3:H3','IGST Foregone (In Rs. Crore)',ColumnHead_format)
+sheet4.write('I3:I3','Cess Foregone (In Rs. Crore)',ColumnHead_format)
+sheet4.set_column(1, 8, 15)
+
+print("Connecting to SmartView")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query")
+cursor1.execute(Sql6)
+print("Writing data to output file for CTH6")
+
+cnt=0
+rno=3
+for r in cursor1:
+    cnt = cnt + 1
+    sheet4.write(rno, 0, cnt,cell_format)
+    for c in range(8):
+        if (c >= 0 and c <= 8):
+            if(r[c]==None):
+                sheet4.write(rno, c+1, '--',Num_format)
+            else:
+                sheet4.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet4.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+
+cursor1.close()
+cnxn.close()
+
+################## Create Data "Summary" Worksheet for CTH8
+sheet5 = wb.add_worksheet('CTH8')
+
+sheet5.merge_range('A1:I1', 'Customs (Import) - IGST Rate wise details (Home consumption & Ex-Bond) for period ' + FromMonth + '-' + FromYear + ' to ' +  ToMonth + '-' + ToYear , title_format)
+
+sheet5.merge_range('A2:D2', '', title_format)
+sheet5.merge_range('E2:G2', 'Total Duty Payable', title_format)
+sheet5.merge_range('H2:I2', '', title_format)
+sheet5.write('A3:A3','S.No.',ColumnHead_format)
+sheet5.set_column(0, 0, 5)
+sheet5.write('B3:B3','CTH [ 8 digit]',ColumnHead_format)
+sheet5.write('C3:C3','IGST  Rate',ColumnHead_format)
+sheet5.write('D3:D3','Assessable Value (In Rs. Crore)',ColumnHead_format)
+sheet5.write('E3:E3','Total IGST Duty (In Rs. Crore)',ColumnHead_format)
+sheet5.write('F3:F3','IGST Payable (In Rs. Crore)',ColumnHead_format)
+sheet5.write('G3:G3','Cess Payable (In Rs. Crore)',ColumnHead_format)
+sheet5.write('H3:H3','IGST Foregone (In Rs. Crore)',ColumnHead_format)
+sheet5.write('I3:I3','Cess Foregone (In Rs. Crore)',ColumnHead_format)
+sheet5.set_column(1, 8, 15)
+
+print("Connecting to SmartView")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query")
+cursor1.execute(Sql8)
+print("Writing data to output file for CTH8")
+
+cnt=0
+rno=3
+for r in cursor1:
+    cnt = cnt + 1
+    sheet5.write(rno, 0, cnt,cell_format)
+    for c in range(8):
+        if (c >= 0 and c <= 8):
+            if(r[c]==None):
+                sheet5.write(rno, c+1, '--',Num_format)
+            else:
+                sheet5.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet5.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+
+cursor1.close()
+cnxn.close()
+
+wb.close()
+
+print("End of Run")
+
+
+*****************************ABS*******************************************
+
+import sys
+import pyodbc
+import xlsxwriter
+
+import subprocess as sp
+sp.call('cls',shell=True)
+
+print("                                         ------------------------------------------------------ ")
+print("                                         |                                                     |")
+print("                                         |       Monthly TRU Data - SAPT                       |")
+print("                                         |                                                     |")
+print("                                         -------------------------------------------------------")                                 
+
+From_dt=input('Please enter From Date YYYYMMDD:')
+To_dt=input('Please enter To Date YYYYMMDD:')
+
+def getMonth(x):
+        switcher={
+                
+                '01':'January',
+                '02':'February',
+                '03':'March',
+                '04':'April ',
+                '05':'May',
+                '06':'June',
+                '07':'July',
+                '08':'August',
+                '09':'September', 
+                '10':'October',
+                '11':'November' ,
+                '12':'December'
+                }     
+        return switcher.get(x)
+    
+FromYear=From_dt[0:][:4]
+FromMonth=getMonth(From_dt[4:][:2])
+FromDay=From_dt[7:][:2]
+ToYear=To_dt[0:][:4]
+ToMonth=getMonth(To_dt[4:][:2])
+ToDay=To_dt[6:][:2]
+
+
+FileNm='Data_SAPT_'+FromMonth+FromYear+'.xlsx'
+Path="C:\Python_TRU_Reports\Monthly\\"
+
+print("Output FileName: "+Path+FileNm)
+
+wb = xlsxwriter.Workbook(Path+FileNm)
+
+################## Create "Note" Worksheet
+sheet1 = wb.add_worksheet('Note')
+cell_format = wb.add_format()
+
+cell_format = wb.add_format()
+
+note_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+   'fg_color': '#B3B6B7',
+    'font_size':'11'})
+title_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'11'})
+ColumnHead_format = wb.add_format({
+    'bold': 10,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'10',
+    'text_wrap':1})
+Num_format = wb.add_format({'border': 1,'num_format':'0.00'})
+date_format = wb.add_format({'border': 1,'num_format': 'dd-mm-yyyy'})
+cell_format = wb.add_format({'border': 1,})
+
+sheet1.merge_range('B2:K2','Data has been extracted for the period mentioned in format sheet',note_format)
+
+################## Create Data "Summary" Worksheet
+sheet2 = wb.add_worksheet('Summary')
+
+sheet2.merge_range('A1:AN1', 'Imports - Home Consumption & Ex-Bond-SAPT Notification wise Duty Foregone for ' + FromMonth + '-' + FromYear   , title_format)
+sheet2.merge_range('A2:D2', '', title_format)
+sheet2.merge_range('E2:AN2', '(In Rs. Crore)', title_format)
+sheet2.merge_range('A3:E3', ' ', title_format)
+sheet2.merge_range('F3:X3', 'Total Duty Payable', title_format)
+sheet2.merge_range('Y3:AN3', 'Total Duty Foregone', title_format)
+						 
+sheet2.write('A4:A4','S.No.',ColumnHead_format)
+sheet2.set_column(0, 0, 5)
+sheet2.write('B4:B4','SAPT Notification',ColumnHead_format)
+sheet2.write('C4:C4','BE Type [H+X]',ColumnHead_format)
+sheet2.write('D4:D4','BCD Rate',ColumnHead_format)
+sheet2.write('E4:E4','Assessable Value',ColumnHead_format)
+sheet2.write('F4:F4','Total Duty Payable',ColumnHead_format)
+sheet2.write('G4:G4','IGST Amount',ColumnHead_format)
+sheet2.write('H4:H4','GST CESS Amount',ColumnHead_format)
+sheet2.write('I4:I4','BCD Payable',ColumnHead_format)
+sheet2.write('J4:J4','CVD Payable',ColumnHead_format)
+sheet2.write('K4:K4','GSIA (Goods of Special Importance Act) Payable',ColumnHead_format)
+sheet2.write('L4:L4','Special Excise Payable  (CVD Sch II)',ColumnHead_format)
+sheet2.write('M4:M4','TTA (Textile and Textile Articles) Payable',ColumnHead_format)
+sheet2.write('N4:N4','Cess Payable',ColumnHead_format)
+sheet2.write('O4:O4','Special Custom Payable',ColumnHead_format)
+sheet2.write('P4:P4','Education Cess Payable',ColumnHead_format)
+sheet2.write('Q4:Q4','NCCD Payable',ColumnHead_format)
+sheet2.write('R4:R4','Antidumping Payable',ColumnHead_format)
+sheet2.write('S4:S4','ECENVATAMT',ColumnHead_format)
+sheet2.write('T4:T4','OTH_CUS_AMT',ColumnHead_format)
+sheet2.write('U4:U4','CVD05 Payable',ColumnHead_format)
+sheet2.write('V4:V4','Health Cess Duty Payable',ColumnHead_format)
+sheet2.write('W4:W4','Safeguard Duty Payable',ColumnHead_format)
+sheet2.write('X4:X4','Secondary and Higher Education Cess Payable',ColumnHead_format)
+sheet2.write('Y4:Y4','Total Duty Foregone',ColumnHead_format)
+sheet2.write('Z4:Z4','BCD Foregone',ColumnHead_format)
+sheet2.write('AA4:AA4','CVD Foregone',ColumnHead_format)
+sheet2.write('AB4:AB4','GSIA (Goods of Special Importance Act) Foregone',ColumnHead_format)
+sheet2.write('AC4:AC4','Special Excise Duty Foregone',ColumnHead_format)
+sheet2.write('AD4:AD4','TTA (Textile and Textile Articles) Foregone',ColumnHead_format)
+sheet2.write('AE4:AE4','Cess Duty Foregone',ColumnHead_format)
+sheet2.write('AF4:AF4','Special Custom Duty Foregone',ColumnHead_format)
+sheet2.write('AG4:AG4','Education Cess Foregone',ColumnHead_format)
+sheet2.write('AH4:AH4','NCCD Foregone',ColumnHead_format)
+sheet2.write('AI4:AI4','Health Cess Foregone',ColumnHead_format)
+sheet2.write('AJ4:AJ4','SAPT Foregone',ColumnHead_format)
+sheet2.write('AK4:AK4','CVD05 Foregone',ColumnHead_format)
+sheet2.write('AL4:AL4','Secondary and Higher Education Cess Foregone',ColumnHead_format)
+sheet2.write('AM4:AM4','DEPB_BCD Amount Foregone',ColumnHead_format)
+sheet2.write('AN4:AN4','DEPB_CVD Amount Foregone',ColumnHead_format)							
+sheet2.set_column(1, 39, 9)
+
+print("Connecting to SmartView")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query")
+cursor1.execute("SELECT A.SAPT_NOTN_A, 'H+X' as BE_TYPE, A.BCD_RTA_A, sum(isnull(a.assess_val_a,0))/10000000 as assess_val_a, sum(isnull(a.duty_a,0))/10000000 as duty_a, sum(isnull(IGST_AMT_A,0))/10000000 as IGST_AMT_A, sum(isnull(GST_CESS_AMT_A,0))/10000000 as GST_CESS_AMT_A, sum(isnull(a.BCD_AMT_A,0))/10000000 as BCD_AMT_A, sum(isnull(a.CVD_AMT_A,0))/10000000 as CVD_AMT_A, sum(isnull(a.AD1_AMT_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Payable, sum(isnull(a.AD2_AMT_A,0))/10000000 as Special_Excise_Payable_CVD_Sch_II, sum(isnull(a.OTH_AMT_A,0))/10000000 as TTA_Payable, sum(isnull(a.CESS_AMT_A,0))/10000000 as Cess_Payable, sum(isnull(a.SCD_AMT_A,0))/10000000 as Special_Custom_Payable, sum(isnull(a.OTH1_AMT_A,0))/10000000 as Education_Cess_Payable, sum(isnull(a.ADD_AMT_A,0))/10000000 as NCCD_Payable, sum(isnull(a.AND_AMT_A,0))/10000000 as Antidumping_Payable, sum(isnull(a.ECENVATAMT_A,0))/10000000 as ECENVATAMT, sum(isnull(a.OTH_CUS_AMT_A,0))/10000000 as OTH_CUS_AMT, sum(isnull(a.CVD05_AMT_A,0))/10000000 as CVD05_Payable, sum(isnull(a.HLTH_AMT_A,0))/10000000 as  Health_Cess_Duty_Payable, sum(isnull(a.SAFG_AMT_A,0))/10000000 as  Safeguard_Duty_Payable, sum(isnull(a.SHEDU_AMT_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Payable, sum(isnull(a.DUTY_FG_A,0))/10000000 as Total_Duty_Foregone, sum(isnull(a.BCD_AMT_FG_A,0))/10000000 as BCD_Foregone, sum(isnull(a.CVD_AMT_FG_A,0))/10000000 as CVD_Foregone, sum(isnull(a.AD1_AMT_FG_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Foregone, sum(isnull(a.AD2_AMT_FG_A,0))/10000000 as  Special_Excise_Duty_Foregone, sum(isnull(a.OTH_AMT_FG_A,0))/10000000 as  TTA_Foregone, sum(isnull(a.CESS_AMT_FG_A,0))/10000000 as Cess_Duty_Foregone, sum(isnull(a.SCD_AMT_FG_A,0))/10000000 as Special_Custom_Duty_Foregone, sum(isnull(a.OTH1_AMT_FG_A,0))/10000000 as Education_Cess_Foregone, sum(isnull(a.ADD_AMT_FG_A,0))/10000000 as NCCD_Foregone, sum(isnull(a.HLTH_AMT_FG_A,0))/10000000 as Health_Cess_Foregone, sum(isnull(a.SAPT_AMT_FG_A,0))/10000000 as SAPT_Foregone, sum(isnull(a.CVD05_AMT_FG_A,0))/10000000 as CVD05_Foregone, sum(isnull(a.SHEDU_AMT_FG_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Foregone, sum(isnull(a.DEPB_BCD_AMT_FG,0))/10000000 as DEPB_BCD_Amount_Foregone, SUM(isnull(a.DEPB_CVD_AMT_FG,0))/10000000 as DEPB_CVD_Amount_Foregone FROM DWUSER.FACT_IMP_BE_ITEM_DET_T A, DWUSER.FACT_IMP_BE_T B, WHERE A.DW_BE_KEY = B.DW_BE_KEY AND A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " AND TYP IN ('H','X') GROUP BY A.SAPT_NOTN_A,A.BCD_RTA_A ORDER BY A.SAPT_NOTN_A,A.BCD_RTA_A ")
+print("Writing data to output file")
+
+cnt=0
+rno=4
+for r in cursor1:
+    cnt = cnt + 1   
+    sheet2.write(rno, 0, cnt,cell_format)
+    for c in range(39):
+        if (c >= 0 and c <= 39):
+            
+            if(r[c]==None):
+                sheet2.write(rno, c+1, '--',Num_format)
+            else:
+                sheet2.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet2.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+
+    
+cursor1.close()
+cnxn.close()
+wb.close()
+
+print("End of Run")
+
+
+***************************************ASD*****************************************************
+
+import sys
+import pyodbc
+import xlsxwriter
+
+import subprocess as sp
+sp.call('cls',shell=True)
+
+print("                   ------------------------------------------------------ ")
+print("                   |                                                     |")
+print("                   | Monthly TRU Data - BCD Notification with SNo & CTH  |")
+print("                   |                                                     |")
+print("                   -------------------------------------------------------")                                 
+
+From_dt=input('Please enter Start Date YYYYMMDD:')
+To_dt=input('Please enter End Date YYYYMMDD:')
+
+def getMonth(x):
+        switcher={
+                '01':'January',
+                '02':'February',
+                '03':'March',
+                '04':'April ',
+                '05':'May',
+                '06':'June',
+                '07':'July',
+                '08':'August',
+                '09':'September', 
+                '10':'October',
+                '11':'November' ,
+                '12':'December'
+                }     
+        return switcher.get(x)
+    
+FromYear=From_dt[0:][:4]
+FromMonth=getMonth(From_dt[4:][:2])
+FromDay=From_dt[7:][:2]
+ToYear=To_dt[0:][:4]
+ToMonth=getMonth(To_dt[4:][:2])
+ToDay=To_dt[6:][:2]
+
+
+FileNm='Data_BCD_Notification_SNo_CTH_wise_'+FromMonth+FromYear+'.xlsx'
+Path="C:\Python_TRU_Reports\Monthly\\"
+
+print("Output FileName: "+Path+FileNm)
+
+wb = xlsxwriter.Workbook(Path+FileNm)
+
+################## Create "Note" Worksheet
+sheet1 = wb.add_worksheet('Note')
+cell_format = wb.add_format()
+
+cell_format = wb.add_format()
+
+note_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+   'fg_color': '#B3B6B7',
+    'font_size':'11'})
+title_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'11'})
+ColumnHead_format = wb.add_format({
+    'bold': 10,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'10',
+    'text_wrap':1})
+Num_format = wb.add_format({'border': 1,'num_format':'0.00'})
+date_format = wb.add_format({'border': 1,'num_format': 'dd-mm-yyyy'})
+cell_format = wb.add_format({'border': 1,})
+
+sheet1.merge_range('B2:K2','Data has been extracted for the period mentioned in format sheet',note_format)
+
+
+################## Create Data "Summary" Worksheet for CTH2
+sheet2 = wb.add_worksheet('CTH2')
+
+sheet2.merge_range('A1:AP1', 'Imports(CTH 2digit) - Home Consumption & Ex-Bond- BCD Notification wise Duty Foregone for ' + FromMonth + '-' + FromYear   , title_format)
+sheet2.merge_range('A2:AP2', '(In Rs. Crore)', title_format)
+sheet2.merge_range('A3:G3', ' ', title_format)
+sheet2.merge_range('H3:Z3', 'Total Duty Payable', title_format)
+sheet2.merge_range('AA3:AP3', 'Total Duty Foregone', title_format)
+						 
+sheet2.write('A4:A4','S.No.',ColumnHead_format)
+sheet2.set_column(0, 0, 5)
+sheet2.write('B4:B4','BCD Notification',ColumnHead_format)
+sheet2.write('C4:C4','Serial Number',ColumnHead_format)
+sheet2.write('D4:D4','CTH [ 2 digit]',ColumnHead_format)
+sheet2.write('E4:E4','BE Type [H+X]',ColumnHead_format)
+sheet2.write('F4:F4','BCD Rate',ColumnHead_format)
+sheet2.write('G4:G4','Assessable Value',ColumnHead_format)
+sheet2.write('H4:H4','Total Duty Payable',ColumnHead_format)
+sheet2.write('I4:I4','IGST Amount',ColumnHead_format)
+sheet2.write('J4:J4','GST CESS Amount',ColumnHead_format)
+sheet2.write('K4:K4','BCD Payable',ColumnHead_format)
+sheet2.write('L4:L4','CVD Payable',ColumnHead_format)
+sheet2.write('M4:M4','GSIA (Goods of Special Importance Act) Payable',ColumnHead_format)
+sheet2.write('N4:N4','Special Excise Payable  (CVD Sch II)',ColumnHead_format)
+sheet2.write('O4:O4','TTA (Textile and Textile Articles) Payable',ColumnHead_format)
+sheet2.write('P4:P4','Cess Payable',ColumnHead_format)
+sheet2.write('Q4:Q4','Special Custom Payable',ColumnHead_format)
+sheet2.write('R4:R4','Education Cess Payable',ColumnHead_format)
+sheet2.write('S4:S4','NCCD Payable',ColumnHead_format)
+sheet2.write('T4:T4','Antidumping Payable',ColumnHead_format)
+sheet2.write('U4:U4','ECENVATAMT',ColumnHead_format)
+sheet2.write('V4:V4','OTH_CUS_AMT',ColumnHead_format)
+sheet2.write('W4:W4','CVD05 Payable',ColumnHead_format)
+sheet2.write('X4:X4','Health Cess Duty Payable',ColumnHead_format)
+sheet2.write('Y4:Y4','Safeguard Duty Payable',ColumnHead_format)
+sheet2.write('Z4:Z4','Secondary and Higher Education Cess Payable',ColumnHead_format)
+sheet2.write('AA4:AA4','Total Duty Foregone',ColumnHead_format)
+sheet2.write('AB4:AB4','BCD Foregone',ColumnHead_format)
+sheet2.write('AC4:AC4','CVD Foregone',ColumnHead_format)
+sheet2.write('AD4:AD4','GSIA (Goods of Special Importance Act) Foregone',ColumnHead_format)
+sheet2.write('AE4:AE4','Special Excise Duty Foregone',ColumnHead_format)
+sheet2.write('AF4:AF4','TTA (Textile and Textile Articles) Foregone',ColumnHead_format)
+sheet2.write('AG4:AG4','Cess Duty Foregone',ColumnHead_format)
+sheet2.write('AH4:AH4','Special Custom Duty Foregone',ColumnHead_format)
+sheet2.write('AI4:AI4','Education Cess Foregone',ColumnHead_format)
+sheet2.write('AJ4:AJ4','NCCD Foregone',ColumnHead_format)
+sheet2.write('AK4:AK4','Health Cess Foregone',ColumnHead_format)
+sheet2.write('AL4:AL4','SAPT Foregone',ColumnHead_format)
+sheet2.write('AM4:AM4','CVD05 Foregone',ColumnHead_format)
+sheet2.write('AN4:AN4','Secondary and Higher Education Cess Foregone',ColumnHead_format)
+sheet2.write('AO4:AO4','DEPB_BCD Amount Foregone',ColumnHead_format)
+sheet2.write('AP4:AP4','DEPB_CVD Amount Foregone',ColumnHead_format)							
+sheet2.set_column(1, 40, 9)
+
+print("Connecting to SmartView for CTH2")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query for CTH2")
+cursor1.execute("SELECT A.BCD_NOTN_A, A.BCD_NSNO_A, SUBSTRING(CTH_A,1,2) CTH_A, 'H+X' as BE_TYPE, A.BCD_RTA_A, sum(isnull(a.assess_val_a,0))/10000000 as assess_val_a, sum(isnull(a.duty_a,0))/10000000 as duty_a, sum(isnull(IGST_AMT_A,0))/10000000 as IGST_AMT_A, sum(isnull(GST_CESS_AMT_A,0))/10000000 as GST_CESS_AMT_A, sum(isnull(a.BCD_AMT_A,0))/10000000 as BCD_AMT_A, sum(isnull(a.CVD_AMT_A,0))/10000000 as CVD_AMT_A, sum(isnull(a.AD1_AMT_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Payable, sum(isnull(a.AD2_AMT_A,0))/10000000 as Special_Excise_Payable_CVD_Sch_II, sum(isnull(a.OTH_AMT_A,0))/10000000 as TTA_Payable, sum(isnull(a.CESS_AMT_A,0))/10000000 as Cess_Payable, sum(isnull(a.SCD_AMT_A,0))/10000000 as Special_Custom_Payable, sum(isnull(a.OTH1_AMT_A,0))/10000000 as Education_Cess_Payable, sum(isnull(a.ADD_AMT_A,0))/10000000 as NCCD_Payable, sum(isnull(a.AND_AMT_A,0))/10000000 as Antidumping_Payable, sum(isnull(a.ECENVATAMT_A,0))/10000000 as ECENVATAMT, sum(isnull(a.OTH_CUS_AMT_A,0))/10000000 as OTH_CUS_AMT, sum(isnull(a.CVD05_AMT_A,0))/10000000 as CVD05_Payable, sum(isnull(a.HLTH_AMT_A,0))/10000000 as  Health_Cess_Duty_Payable, sum(isnull(a.SAFG_AMT_A,0))/10000000 as  Safeguard_Duty_Payable, sum(isnull(a.SHEDU_AMT_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Payable, sum(isnull(a.DUTY_FG_A,0))/10000000 as Total_Duty_Foregone, sum(isnull(a.BCD_AMT_FG_A,0))/10000000 as BCD_Foregone, sum(isnull(a.CVD_AMT_FG_A,0))/10000000 as CVD_Foregone, sum(isnull(a.AD1_AMT_FG_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Foregone, sum(isnull(a.AD2_AMT_FG_A,0))/10000000 as  Special_Excise_Duty_Foregone, sum(isnull(a.OTH_AMT_FG_A,0))/10000000 as  TTA_Foregone, sum(isnull(a.CESS_AMT_FG_A,0))/10000000 as Cess_Duty_Foregone, sum(isnull(a.SCD_AMT_FG_A,0))/10000000 as Special_Custom_Duty_Foregone, sum(isnull(a.OTH1_AMT_FG_A,0))/10000000 as Education_Cess_Foregone, sum(isnull(a.ADD_AMT_FG_A,0))/10000000 as NCCD_Foregone, sum(isnull(a.HLTH_AMT_FG_A,0))/10000000 as Health_Cess_Foregone, sum(isnull(a.SAPT_AMT_FG_A,0))/10000000 as SAPT_Foregone, sum(isnull(a.CVD05_AMT_FG_A,0))/10000000 as CVD05_Foregone, sum(isnull(a.SHEDU_AMT_FG_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Foregone, sum(isnull(a.DEPB_BCD_AMT_FG,0))/10000000 as DEPB_BCD_Amount_Foregone, SUM(isnull(a.DEPB_CVD_AMT_FG,0))/10000000 as DEPB_CVD_Amount_Foregone FROM DWUSER.FACT_IMP_BE_ITEM_DET_T A, DWUSER.FACT_IMP_BE_T B, WHERE A.DW_BE_KEY = B.DW_BE_KEY AND A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " AND TYP IN ('H','X') GROUP BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ORDER BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ")
+print("Writing data to output file for CTH2")
+
+cnt=0
+rno=4
+for r in cursor1:
+    cnt = cnt + 1
+    sheet2.write(rno, 0, cnt,cell_format)
+    for c in range(41):
+        if (c >= 0 and c <= 41):
+            
+            if(r[c]==None):
+                sheet2.write(rno, c+1, '--',Num_format)
+            else:
+                sheet2.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet2.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+     
+cursor1.close()
+cnxn.close()
+
+
+################## Create Data "Summary" Worksheet for CTH4
+sheet3 = wb.add_worksheet('CTH4')
+
+sheet3.merge_range('A1:AP1', 'Imports(CTH 4digit) - Home Consumption & Ex-Bond- BCD Notification wise Duty Foregone for ' + FromMonth + '-' + FromYear   , title_format)
+sheet3.merge_range('A2:AP2', '(In Rs. Crore)', title_format)
+sheet3.merge_range('A3:G3', ' ', title_format)
+sheet3.merge_range('H3:Z3', 'Total Duty Payable', title_format)
+sheet3.merge_range('AA3:AP3', 'Total Duty Foregone', title_format)
+						 
+sheet3.write('A4:A4','S.No.',ColumnHead_format)
+sheet3.set_column(0, 0, 5)
+sheet3.write('B4:B4','BCD Notification',ColumnHead_format)
+sheet3.write('C4:C4','Serial Number',ColumnHead_format)
+sheet3.write('D4:D4','CTH [ 4 digit]',ColumnHead_format)
+sheet3.write('E4:E4','BE Type [H+X]',ColumnHead_format)
+sheet3.write('F4:F4','BCD Rate',ColumnHead_format)
+sheet3.write('G4:G4','Assessable Value',ColumnHead_format)
+sheet3.write('H4:H4','Total Duty Payable',ColumnHead_format)
+sheet3.write('I4:I4','IGST Amount',ColumnHead_format)
+sheet3.write('J4:J4','GST CESS Amount',ColumnHead_format)
+sheet3.write('K4:K4','BCD Payable',ColumnHead_format)
+sheet3.write('L4:L4','CVD Payable',ColumnHead_format)
+sheet3.write('M4:M4','GSIA (Goods of Special Importance Act) Payable',ColumnHead_format)
+sheet3.write('N4:N4','Special Excise Payable  (CVD Sch II)',ColumnHead_format)
+sheet3.write('O4:O4','TTA (Textile and Textile Articles) Payable',ColumnHead_format)
+sheet3.write('P4:P4','Cess Payable',ColumnHead_format)
+sheet3.write('Q4:Q4','Special Custom Payable',ColumnHead_format)
+sheet3.write('R4:R4','Education Cess Payable',ColumnHead_format)
+sheet3.write('S4:S4','NCCD Payable',ColumnHead_format)
+sheet3.write('T4:T4','Antidumping Payable',ColumnHead_format)
+sheet3.write('U4:U4','ECENVATAMT',ColumnHead_format)
+sheet3.write('V4:V4','OTH_CUS_AMT',ColumnHead_format)
+sheet3.write('W4:W4','CVD05 Payable',ColumnHead_format)
+sheet3.write('X4:X4','Health Cess Duty Payable',ColumnHead_format)
+sheet3.write('Y4:Y4','Safeguard Duty Payable',ColumnHead_format)
+sheet3.write('Z4:Z4','Secondary and Higher Education Cess Payable',ColumnHead_format)
+sheet3.write('AA4:AA4','Total Duty Foregone',ColumnHead_format)
+sheet3.write('AB4:AB4','BCD Foregone',ColumnHead_format)
+sheet3.write('AC4:AC4','CVD Foregone',ColumnHead_format)
+sheet3.write('AD4:AD4','GSIA (Goods of Special Importance Act) Foregone',ColumnHead_format)
+sheet3.write('AE4:AE4','Special Excise Duty Foregone',ColumnHead_format)
+sheet3.write('AF4:AF4','TTA (Textile and Textile Articles) Foregone',ColumnHead_format)
+sheet3.write('AG4:AG4','Cess Duty Foregone',ColumnHead_format)
+sheet3.write('AH4:AH4','Special Custom Duty Foregone',ColumnHead_format)
+sheet3.write('AI4:AI4','Education Cess Foregone',ColumnHead_format)
+sheet3.write('AJ4:AJ4','NCCD Foregone',ColumnHead_format)
+sheet3.write('AK4:AK4','Health Cess Foregone',ColumnHead_format)
+sheet3.write('AL4:AL4','SAPT Foregone',ColumnHead_format)
+sheet3.write('AM4:AM4','CVD05 Foregone',ColumnHead_format)
+sheet3.write('AN4:AN4','Secondary and Higher Education Cess Foregone',ColumnHead_format)
+sheet3.write('AO4:AO4','DEPB_BCD Amount Foregone',ColumnHead_format)
+sheet3.write('AP4:AP4','DEPB_CVD Amount Foregone',ColumnHead_format)							
+sheet3.set_column(1, 40, 9)
+
+print("Connecting to SmartView for CTH4")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query for CTH4")
+cursor1.execute("SELECT A.BCD_NOTN_A, A.BCD_NSNO_A, SUBSTRING(CTH_A,1,4) CTH_A, 'H+X' as BE_TYPE, A.BCD_RTA_A, sum(isnull(a.assess_val_a,0))/10000000 as assess_val_a, sum(isnull(a.duty_a,0))/10000000 as duty_a, sum(isnull(IGST_AMT_A,0))/10000000 as IGST_AMT_A, sum(isnull(GST_CESS_AMT_A,0))/10000000 as GST_CESS_AMT_A, sum(isnull(a.BCD_AMT_A,0))/10000000 as BCD_AMT_A, sum(isnull(a.CVD_AMT_A,0))/10000000 as CVD_AMT_A, sum(isnull(a.AD1_AMT_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Payable, sum(isnull(a.AD2_AMT_A,0))/10000000 as Special_Excise_Payable_CVD_Sch_II, sum(isnull(a.OTH_AMT_A,0))/10000000 as TTA_Payable, sum(isnull(a.CESS_AMT_A,0))/10000000 as Cess_Payable, sum(isnull(a.SCD_AMT_A,0))/10000000 as Special_Custom_Payable, sum(isnull(a.OTH1_AMT_A,0))/10000000 as Education_Cess_Payable, sum(isnull(a.ADD_AMT_A,0))/10000000 as NCCD_Payable, sum(isnull(a.AND_AMT_A,0))/10000000 as Antidumping_Payable, sum(isnull(a.ECENVATAMT_A,0))/10000000 as ECENVATAMT, sum(isnull(a.OTH_CUS_AMT_A,0))/10000000 as OTH_CUS_AMT, sum(isnull(a.CVD05_AMT_A,0))/10000000 as CVD05_Payable, sum(isnull(a.HLTH_AMT_A,0))/10000000 as  Health_Cess_Duty_Payable, sum(isnull(a.SAFG_AMT_A,0))/10000000 as  Safeguard_Duty_Payable, sum(isnull(a.SHEDU_AMT_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Payable, sum(isnull(a.DUTY_FG_A,0))/10000000 as Total_Duty_Foregone, sum(isnull(a.BCD_AMT_FG_A,0))/10000000 as BCD_Foregone, sum(isnull(a.CVD_AMT_FG_A,0))/10000000 as CVD_Foregone, sum(isnull(a.AD1_AMT_FG_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Foregone, sum(isnull(a.AD2_AMT_FG_A,0))/10000000 as  Special_Excise_Duty_Foregone, sum(isnull(a.OTH_AMT_FG_A,0))/10000000 as  TTA_Foregone, sum(isnull(a.CESS_AMT_FG_A,0))/10000000 as Cess_Duty_Foregone, sum(isnull(a.SCD_AMT_FG_A,0))/10000000 as Special_Custom_Duty_Foregone, sum(isnull(a.OTH1_AMT_FG_A,0))/10000000 as Education_Cess_Foregone, sum(isnull(a.ADD_AMT_FG_A,0))/10000000 as NCCD_Foregone, sum(isnull(a.HLTH_AMT_FG_A,0))/10000000 as Health_Cess_Foregone, sum(isnull(a.SAPT_AMT_FG_A,0))/10000000 as SAPT_Foregone, sum(isnull(a.CVD05_AMT_FG_A,0))/10000000 as CVD05_Foregone, sum(isnull(a.SHEDU_AMT_FG_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Foregone, sum(isnull(a.DEPB_BCD_AMT_FG,0))/10000000 as DEPB_BCD_Amount_Foregone, SUM(isnull(a.DEPB_CVD_AMT_FG,0))/10000000 as DEPB_CVD_Amount_Foregone FROM DWUSER.FACT_IMP_BE_ITEM_DET_T A, DWUSER.FACT_IMP_BE_T B, WHERE A.DW_BE_KEY = B.DW_BE_KEY AND A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " AND TYP IN ('H','X') GROUP BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ORDER BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ")
+print("Writing data to output file for CTH4")
+
+cnt=0
+rno=4
+for r in cursor1:
+    cnt = cnt + 1
+    sheet3.write(rno, 0, cnt,cell_format)
+    for c in range(41):
+        if (c >= 0 and c <= 41):
+            
+            if(r[c]==None):
+                sheet3.write(rno, c+1, '--',Num_format)
+            else:
+                sheet3.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet3.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+     
+cursor1.close()
+cnxn.close()
+
+
+
+################## Create Data "Summary" Worksheet for CTH6
+sheet4 = wb.add_worksheet('CTH6')
+
+sheet4.merge_range('A1:AP1', 'Imports(CTH 6digit) - Home Consumption & Ex-Bond- BCD Notification wise Duty Foregone for ' + FromMonth + '-' + FromYear   , title_format)
+sheet4.merge_range('A2:AP2', '(In Rs. Crore)', title_format)
+sheet4.merge_range('A3:G3', ' ', title_format)
+sheet4.merge_range('H3:Z3', 'Total Duty Payable', title_format)
+sheet4.merge_range('AA3:AP3', 'Total Duty Foregone', title_format)
+						 
+sheet4.write('A4:A4','S.No.',ColumnHead_format)
+sheet4.set_column(0, 0, 5)
+sheet4.write('B4:B4','BCD Notification',ColumnHead_format)
+sheet4.write('C4:C4','Serial Number',ColumnHead_format)
+sheet4.write('D4:D4','CTH [ 6 digit]',ColumnHead_format)
+sheet4.write('E4:E4','BE Type [H+X]',ColumnHead_format)
+sheet4.write('F4:F4','BCD Rate',ColumnHead_format)
+sheet4.write('G4:G4','Assessable Value',ColumnHead_format)
+sheet4.write('H4:H4','Total Duty Payable',ColumnHead_format)
+sheet4.write('I4:I4','IGST Amount',ColumnHead_format)
+sheet4.write('J4:J4','GST CESS Amount',ColumnHead_format)
+sheet4.write('K4:K4','BCD Payable',ColumnHead_format)
+sheet4.write('L4:L4','CVD Payable',ColumnHead_format)
+sheet4.write('M4:M4','GSIA (Goods of Special Importance Act) Payable',ColumnHead_format)
+sheet4.write('N4:N4','Special Excise Payable  (CVD Sch II)',ColumnHead_format)
+sheet4.write('O4:O4','TTA (Textile and Textile Articles) Payable',ColumnHead_format)
+sheet4.write('P4:P4','Cess Payable',ColumnHead_format)
+sheet4.write('Q4:Q4','Special Custom Payable',ColumnHead_format)
+sheet4.write('R4:R4','Education Cess Payable',ColumnHead_format)
+sheet4.write('S4:S4','NCCD Payable',ColumnHead_format)
+sheet4.write('T4:T4','Antidumping Payable',ColumnHead_format)
+sheet4.write('U4:U4','ECENVATAMT',ColumnHead_format)
+sheet4.write('V4:V4','OTH_CUS_AMT',ColumnHead_format)
+sheet4.write('W4:W4','CVD05 Payable',ColumnHead_format)
+sheet4.write('X4:X4','Health Cess Duty Payable',ColumnHead_format)
+sheet4.write('Y4:Y4','Safeguard Duty Payable',ColumnHead_format)
+sheet4.write('Z4:Z4','Secondary and Higher Education Cess Payable',ColumnHead_format)
+sheet4.write('AA4:AA4','Total Duty Foregone',ColumnHead_format)
+sheet4.write('AB4:AB4','BCD Foregone',ColumnHead_format)
+sheet4.write('AC4:AC4','CVD Foregone',ColumnHead_format)
+sheet4.write('AD4:AD4','GSIA (Goods of Special Importance Act) Foregone',ColumnHead_format)
+sheet4.write('AE4:AE4','Special Excise Duty Foregone',ColumnHead_format)
+sheet4.write('AF4:AF4','TTA (Textile and Textile Articles) Foregone',ColumnHead_format)
+sheet4.write('AG4:AG4','Cess Duty Foregone',ColumnHead_format)
+sheet4.write('AH4:AH4','Special Custom Duty Foregone',ColumnHead_format)
+sheet4.write('AI4:AI4','Education Cess Foregone',ColumnHead_format)
+sheet4.write('AJ4:AJ4','NCCD Foregone',ColumnHead_format)
+sheet4.write('AK4:AK4','Health Cess Foregone',ColumnHead_format)
+sheet4.write('AL4:AL4','SAPT Foregone',ColumnHead_format)
+sheet4.write('AM4:AM4','CVD05 Foregone',ColumnHead_format)
+sheet4.write('AN4:AN4','Secondary and Higher Education Cess Foregone',ColumnHead_format)
+sheet4.write('AO4:AO4','DEPB_BCD Amount Foregone',ColumnHead_format)
+sheet4.write('AP4:AP4','DEPB_CVD Amount Foregone',ColumnHead_format)							
+sheet4.set_column(1, 40, 9)
+
+print("Connecting to SmartView for CTH6")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query for CTH6")
+cursor1.execute("SELECT A.BCD_NOTN_A, A.BCD_NSNO_A, SUBSTRING(CTH_A,1,6) CTH_A, 'H+X' as BE_TYPE, A.BCD_RTA_A, sum(isnull(a.assess_val_a,0))/10000000 as assess_val_a, sum(isnull(a.duty_a,0))/10000000 as duty_a, sum(isnull(IGST_AMT_A,0))/10000000 as IGST_AMT_A, sum(isnull(GST_CESS_AMT_A,0))/10000000 as GST_CESS_AMT_A, sum(isnull(a.BCD_AMT_A,0))/10000000 as BCD_AMT_A, sum(isnull(a.CVD_AMT_A,0))/10000000 as CVD_AMT_A, sum(isnull(a.AD1_AMT_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Payable, sum(isnull(a.AD2_AMT_A,0))/10000000 as Special_Excise_Payable_CVD_Sch_II, sum(isnull(a.OTH_AMT_A,0))/10000000 as TTA_Payable, sum(isnull(a.CESS_AMT_A,0))/10000000 as Cess_Payable, sum(isnull(a.SCD_AMT_A,0))/10000000 as Special_Custom_Payable, sum(isnull(a.OTH1_AMT_A,0))/10000000 as Education_Cess_Payable, sum(isnull(a.ADD_AMT_A,0))/10000000 as NCCD_Payable, sum(isnull(a.AND_AMT_A,0))/10000000 as Antidumping_Payable, sum(isnull(a.ECENVATAMT_A,0))/10000000 as ECENVATAMT, sum(isnull(a.OTH_CUS_AMT_A,0))/10000000 as OTH_CUS_AMT, sum(isnull(a.CVD05_AMT_A,0))/10000000 as CVD05_Payable, sum(isnull(a.HLTH_AMT_A,0))/10000000 as  Health_Cess_Duty_Payable, sum(isnull(a.SAFG_AMT_A,0))/10000000 as  Safeguard_Duty_Payable, sum(isnull(a.SHEDU_AMT_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Payable, sum(isnull(a.DUTY_FG_A,0))/10000000 as Total_Duty_Foregone, sum(isnull(a.BCD_AMT_FG_A,0))/10000000 as BCD_Foregone, sum(isnull(a.CVD_AMT_FG_A,0))/10000000 as CVD_Foregone, sum(isnull(a.AD1_AMT_FG_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Foregone, sum(isnull(a.AD2_AMT_FG_A,0))/10000000 as  Special_Excise_Duty_Foregone, sum(isnull(a.OTH_AMT_FG_A,0))/10000000 as  TTA_Foregone, sum(isnull(a.CESS_AMT_FG_A,0))/10000000 as Cess_Duty_Foregone, sum(isnull(a.SCD_AMT_FG_A,0))/10000000 as Special_Custom_Duty_Foregone, sum(isnull(a.OTH1_AMT_FG_A,0))/10000000 as Education_Cess_Foregone, sum(isnull(a.ADD_AMT_FG_A,0))/10000000 as NCCD_Foregone, sum(isnull(a.HLTH_AMT_FG_A,0))/10000000 as Health_Cess_Foregone, sum(isnull(a.SAPT_AMT_FG_A,0))/10000000 as SAPT_Foregone, sum(isnull(a.CVD05_AMT_FG_A,0))/10000000 as CVD05_Foregone, sum(isnull(a.SHEDU_AMT_FG_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Foregone, sum(isnull(a.DEPB_BCD_AMT_FG,0))/10000000 as DEPB_BCD_Amount_Foregone, SUM(isnull(a.DEPB_CVD_AMT_FG,0))/10000000 as DEPB_CVD_Amount_Foregone FROM DWUSER.FACT_IMP_BE_ITEM_DET_T A, DWUSER.FACT_IMP_BE_T B, WHERE A.DW_BE_KEY = B.DW_BE_KEY AND A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " AND TYP IN ('H','X') GROUP BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ORDER BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ")
+print("Writing data to output file for CTH6")
+
+cnt=0
+rno=4
+for r in cursor1:
+    cnt = cnt + 1
+    sheet4.write(rno, 0, cnt,cell_format)
+    for c in range(41):
+        if (c >= 0 and c <= 41):
+            
+            if(r[c]==None):
+                sheet4.write(rno, c+1, '--',Num_format)
+            else:
+                sheet4.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet4.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+     
+#input("Press Enter to continue...")
+cursor1.close()
+cnxn.close()
+
+
+################## Create Data "Summary" Worksheet for CTH8
+sheet5 = wb.add_worksheet('CTH8')
+
+sheet5.merge_range('A1:AP1', 'Imports(CTH 8digit) - Home Consumption & Ex-Bond- BCD Notification wise Duty Foregone for ' + FromMonth + '-' + FromYear   , title_format)
+sheet5.merge_range('A2:AP2', '(In Rs. Crore)', title_format)
+sheet5.merge_range('A3:G3', ' ', title_format)
+sheet5.merge_range('H3:Z3', 'Total Duty Payable', title_format)
+sheet5.merge_range('AA3:AP3', 'Total Duty Foregone', title_format)
+						 
+sheet5.write('A4:A4','S.No.',ColumnHead_format)
+sheet5.set_column(0, 0, 5)
+sheet5.write('B4:B4','BCD Notification',ColumnHead_format)
+sheet5.write('C4:C4','Serial Number',ColumnHead_format)
+sheet5.write('D4:D4','CTH [ 8 digit]',ColumnHead_format)
+sheet5.write('E4:E4','BE Type [H+X]',ColumnHead_format)
+sheet5.write('F4:F4','BCD Rate',ColumnHead_format)
+sheet5.write('G4:G4','Assessable Value',ColumnHead_format)
+sheet5.write('H4:H4','Total Duty Payable',ColumnHead_format)
+sheet5.write('I4:I4','IGST Amount',ColumnHead_format)
+sheet5.write('J4:J4','GST CESS Amount',ColumnHead_format)
+sheet5.write('K4:K4','BCD Payable',ColumnHead_format)
+sheet5.write('L4:L4','CVD Payable',ColumnHead_format)
+sheet5.write('M4:M4','GSIA (Goods of Special Importance Act) Payable',ColumnHead_format)
+sheet5.write('N4:N4','Special Excise Payable  (CVD Sch II)',ColumnHead_format)
+sheet5.write('O4:O4','TTA (Textile and Textile Articles) Payable',ColumnHead_format)
+sheet5.write('P4:P4','Cess Payable',ColumnHead_format)
+sheet5.write('Q4:Q4','Special Custom Payable',ColumnHead_format)
+sheet5.write('R4:R4','Education Cess Payable',ColumnHead_format)
+sheet5.write('S4:S4','NCCD Payable',ColumnHead_format)
+sheet5.write('T4:T4','Antidumping Payable',ColumnHead_format)
+sheet5.write('U4:U4','ECENVATAMT',ColumnHead_format)
+sheet5.write('V4:V4','OTH_CUS_AMT',ColumnHead_format)
+sheet5.write('W4:W4','CVD05 Payable',ColumnHead_format)
+sheet5.write('X4:X4','Health Cess Duty Payable',ColumnHead_format)
+sheet5.write('Y4:Y4','Safeguard Duty Payable',ColumnHead_format)
+sheet5.write('Z4:Z4','Secondary and Higher Education Cess Payable',ColumnHead_format)
+sheet5.write('AA4:AA4','Total Duty Foregone',ColumnHead_format)
+sheet5.write('AB4:AB4','BCD Foregone',ColumnHead_format)
+sheet5.write('AC4:AC4','CVD Foregone',ColumnHead_format)
+sheet5.write('AD4:AD4','GSIA (Goods of Special Importance Act) Foregone',ColumnHead_format)
+sheet5.write('AE4:AE4','Special Excise Duty Foregone',ColumnHead_format)
+sheet5.write('AF4:AF4','TTA (Textile and Textile Articles) Foregone',ColumnHead_format)
+sheet5.write('AG4:AG4','Cess Duty Foregone',ColumnHead_format)
+sheet5.write('AH4:AH4','Special Custom Duty Foregone',ColumnHead_format)
+sheet5.write('AI4:AI4','Education Cess Foregone',ColumnHead_format)
+sheet5.write('AJ4:AJ4','NCCD Foregone',ColumnHead_format)
+sheet5.write('AK4:AK4','Health Cess Foregone',ColumnHead_format)
+sheet5.write('AL4:AL4','SAPT Foregone',ColumnHead_format)
+sheet5.write('AM4:AM4','CVD05 Foregone',ColumnHead_format)
+sheet5.write('AN4:AN4','Secondary and Higher Education Cess Foregone',ColumnHead_format)
+sheet5.write('AO4:AO4','DEPB_BCD Amount Foregone',ColumnHead_format)
+sheet5.write('AP4:AP4','DEPB_CVD Amount Foregone',ColumnHead_format)							
+sheet5.set_column(1, 40, 9)
+
+print("Connecting to SmartView for CTH8")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query for CTH8")
+cursor1.execute("SELECT A.BCD_NOTN_A, A.BCD_NSNO_A, CTH_A, 'H+X' as BE_TYPE, A.BCD_RTA_A, sum(isnull(a.assess_val_a,0))/10000000 as assess_val_a, sum(isnull(a.duty_a,0))/10000000 as duty_a, sum(isnull(IGST_AMT_A,0))/10000000 as IGST_AMT_A, sum(isnull(GST_CESS_AMT_A,0))/10000000 as GST_CESS_AMT_A, sum(isnull(a.BCD_AMT_A,0))/10000000 as BCD_AMT_A, sum(isnull(a.CVD_AMT_A,0))/10000000 as CVD_AMT_A, sum(isnull(a.AD1_AMT_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Payable, sum(isnull(a.AD2_AMT_A,0))/10000000 as Special_Excise_Payable_CVD_Sch_II, sum(isnull(a.OTH_AMT_A,0))/10000000 as TTA_Payable, sum(isnull(a.CESS_AMT_A,0))/10000000 as Cess_Payable, sum(isnull(a.SCD_AMT_A,0))/10000000 as Special_Custom_Payable, sum(isnull(a.OTH1_AMT_A,0))/10000000 as Education_Cess_Payable, sum(isnull(a.ADD_AMT_A,0))/10000000 as NCCD_Payable, sum(isnull(a.AND_AMT_A,0))/10000000 as Antidumping_Payable, sum(isnull(a.ECENVATAMT_A,0))/10000000 as ECENVATAMT, sum(isnull(a.OTH_CUS_AMT_A,0))/10000000 as OTH_CUS_AMT, sum(isnull(a.CVD05_AMT_A,0))/10000000 as CVD05_Payable, sum(isnull(a.HLTH_AMT_A,0))/10000000 as  Health_Cess_Duty_Payable, sum(isnull(a.SAFG_AMT_A,0))/10000000 as  Safeguard_Duty_Payable, sum(isnull(a.SHEDU_AMT_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Payable, sum(isnull(a.DUTY_FG_A,0))/10000000 as Total_Duty_Foregone, sum(isnull(a.BCD_AMT_FG_A,0))/10000000 as BCD_Foregone, sum(isnull(a.CVD_AMT_FG_A,0))/10000000 as CVD_Foregone, sum(isnull(a.AD1_AMT_FG_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Foregone, sum(isnull(a.AD2_AMT_FG_A,0))/10000000 as  Special_Excise_Duty_Foregone, sum(isnull(a.OTH_AMT_FG_A,0))/10000000 as  TTA_Foregone, sum(isnull(a.CESS_AMT_FG_A,0))/10000000 as Cess_Duty_Foregone, sum(isnull(a.SCD_AMT_FG_A,0))/10000000 as Special_Custom_Duty_Foregone, sum(isnull(a.OTH1_AMT_FG_A,0))/10000000 as Education_Cess_Foregone, sum(isnull(a.ADD_AMT_FG_A,0))/10000000 as NCCD_Foregone, sum(isnull(a.HLTH_AMT_FG_A,0))/10000000 as Health_Cess_Foregone, sum(isnull(a.SAPT_AMT_FG_A,0))/10000000 as SAPT_Foregone, sum(isnull(a.CVD05_AMT_FG_A,0))/10000000 as CVD05_Foregone, sum(isnull(a.SHEDU_AMT_FG_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Foregone, sum(isnull(a.DEPB_BCD_AMT_FG,0))/10000000 as DEPB_BCD_Amount_Foregone, SUM(isnull(a.DEPB_CVD_AMT_FG,0))/10000000 as DEPB_CVD_Amount_Foregone FROM DWUSER.FACT_IMP_BE_ITEM_DET_T A, DWUSER.FACT_IMP_BE_T B, WHERE A.DW_BE_KEY = B.DW_BE_KEY AND A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " AND TYP IN ('H','X') GROUP BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ORDER BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ")
+print("Writing data to output file for CTH8")
+
+cnt=0
+rno=4
+for r in cursor1:
+    cnt = cnt + 1
+    sheet5.write(rno, 0, cnt,cell_format)
+    for c in range(41):
+        if (c >= 0 and c <= 41):
+            
+            if(r[c]==None):
+                sheet5.write(rno, c+1, '--',Num_format)
+            else:
+                sheet5.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet5.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+     
+
+cursor1.close()
+cnxn.close()
+wb.close()
+
+print("End of Run")
+
+
+
+
+import sys
+import pyodbc
+import xlsxwriter
+
+import subprocess as sp
+sp.call('cls',shell=True)
+
+print("                   ------------------------------------------------------ ")
+print("                   |                                                     |")
+print("                   | Monthly TRU Data - BCD Notification with SNo & CTH  |")
+print("                   |                                                     |")
+print("                   -------------------------------------------------------")                                 
+
+From_dt=input('Please enter Start Date YYYYMMDD:')
+To_dt=input('Please enter End Date YYYYMMDD:')
+
+def getMonth(x):
+        switcher={
+                '01':'January',
+                '02':'February',
+                '03':'March',
+                '04':'April ',
+                '05':'May',
+                '06':'June',
+                '07':'July',
+                '08':'August',
+                '09':'September', 
+                '10':'October',
+                '11':'November' ,
+                '12':'December'
+                }     
+        return switcher.get(x)
+    
+FromYear=From_dt[0:][:4]
+FromMonth=getMonth(From_dt[4:][:2])
+FromDay=From_dt[7:][:2]
+ToYear=To_dt[0:][:4]
+ToMonth=getMonth(To_dt[4:][:2])
+ToDay=To_dt[6:][:2]
+
+
+FileNm='Data_BCD_Notification_SNo_CTH_wise_'+FromMonth+FromYear+'.xlsx'
+Path="C:\Python_TRU_Reports\Monthly\\"
+
+print("Output FileName: "+Path+FileNm)
+
+wb = xlsxwriter.Workbook(Path+FileNm)
+
+################## Create "Note" Worksheet
+sheet1 = wb.add_worksheet('Note')
+cell_format = wb.add_format()
+
+cell_format = wb.add_format()
+
+note_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+   'fg_color': '#B3B6B7',
+    'font_size':'11'})
+title_format = wb.add_format({
+    'bold': 11,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'11'})
+ColumnHead_format = wb.add_format({
+    'bold': 10,
+    'border': 1,
+    'align': 'center',
+    'valign': 'vcenter',
+    'fg_color': '#B3B6B7',
+    'font_size':'10',
+    'text_wrap':1})
+Num_format = wb.add_format({'border': 1,'num_format':'0.00'})
+date_format = wb.add_format({'border': 1,'num_format': 'dd-mm-yyyy'})
+cell_format = wb.add_format({'border': 1,})
+
+sheet1.merge_range('B2:K2','Data has been extracted for the period mentioned in format sheet',note_format)
+
+
+################## Create Data "Summary" Worksheet for CTH2
+sheet2 = wb.add_worksheet('CTH2')
+
+sheet2.merge_range('A1:AP1', 'Imports(CTH 2digit) - Home Consumption & Ex-Bond- BCD Notification wise Duty Foregone for ' + FromMonth + '-' + FromYear   , title_format)
+sheet2.merge_range('A2:AP2', '(In Rs. Crore)', title_format)
+sheet2.merge_range('A3:G3', ' ', title_format)
+sheet2.merge_range('H3:Z3', 'Total Duty Payable', title_format)
+sheet2.merge_range('AA3:AP3', 'Total Duty Foregone', title_format)
+						 
+sheet2.write('A4:A4','S.No.',ColumnHead_format)
+sheet2.set_column(0, 0, 5)
+sheet2.write('B4:B4','BCD Notification',ColumnHead_format)
+sheet2.write('C4:C4','Serial Number',ColumnHead_format)
+sheet2.write('D4:D4','CTH [ 2 digit]',ColumnHead_format)
+sheet2.write('E4:E4','BE Type [H+X]',ColumnHead_format)
+sheet2.write('F4:F4','BCD Rate',ColumnHead_format)
+sheet2.write('G4:G4','Assessable Value',ColumnHead_format)
+sheet2.write('H4:H4','Total Duty Payable',ColumnHead_format)
+sheet2.write('I4:I4','IGST Amount',ColumnHead_format)
+sheet2.write('J4:J4','GST CESS Amount',ColumnHead_format)
+sheet2.write('K4:K4','BCD Payable',ColumnHead_format)
+sheet2.write('L4:L4','CVD Payable',ColumnHead_format)
+sheet2.write('M4:M4','GSIA (Goods of Special Importance Act) Payable',ColumnHead_format)
+sheet2.write('N4:N4','Special Excise Payable  (CVD Sch II)',ColumnHead_format)
+sheet2.write('O4:O4','TTA (Textile and Textile Articles) Payable',ColumnHead_format)
+sheet2.write('P4:P4','Cess Payable',ColumnHead_format)
+sheet2.write('Q4:Q4','Special Custom Payable',ColumnHead_format)
+sheet2.write('R4:R4','Education Cess Payable',ColumnHead_format)
+sheet2.write('S4:S4','NCCD Payable',ColumnHead_format)
+sheet2.write('T4:T4','Antidumping Payable',ColumnHead_format)
+sheet2.write('U4:U4','ECENVATAMT',ColumnHead_format)
+sheet2.write('V4:V4','OTH_CUS_AMT',ColumnHead_format)
+sheet2.write('W4:W4','CVD05 Payable',ColumnHead_format)
+sheet2.write('X4:X4','Health Cess Duty Payable',ColumnHead_format)
+sheet2.write('Y4:Y4','Safeguard Duty Payable',ColumnHead_format)
+sheet2.write('Z4:Z4','Secondary and Higher Education Cess Payable',ColumnHead_format)
+sheet2.write('AA4:AA4','Total Duty Foregone',ColumnHead_format)
+sheet2.write('AB4:AB4','BCD Foregone',ColumnHead_format)
+sheet2.write('AC4:AC4','CVD Foregone',ColumnHead_format)
+sheet2.write('AD4:AD4','GSIA (Goods of Special Importance Act) Foregone',ColumnHead_format)
+sheet2.write('AE4:AE4','Special Excise Duty Foregone',ColumnHead_format)
+sheet2.write('AF4:AF4','TTA (Textile and Textile Articles) Foregone',ColumnHead_format)
+sheet2.write('AG4:AG4','Cess Duty Foregone',ColumnHead_format)
+sheet2.write('AH4:AH4','Special Custom Duty Foregone',ColumnHead_format)
+sheet2.write('AI4:AI4','Education Cess Foregone',ColumnHead_format)
+sheet2.write('AJ4:AJ4','NCCD Foregone',ColumnHead_format)
+sheet2.write('AK4:AK4','Health Cess Foregone',ColumnHead_format)
+sheet2.write('AL4:AL4','SAPT Foregone',ColumnHead_format)
+sheet2.write('AM4:AM4','CVD05 Foregone',ColumnHead_format)
+sheet2.write('AN4:AN4','Secondary and Higher Education Cess Foregone',ColumnHead_format)
+sheet2.write('AO4:AO4','DEPB_BCD Amount Foregone',ColumnHead_format)
+sheet2.write('AP4:AP4','DEPB_CVD Amount Foregone',ColumnHead_format)							
+sheet2.set_column(1, 40, 9)
+
+print("Connecting to SmartView for CTH2")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query for CTH2")
+cursor1.execute("SELECT A.BCD_NOTN_A, A.BCD_NSNO_A, SUBSTRING(CTH_A,1,2) CTH_A, 'H+X' as BE_TYPE, A.BCD_RTA_A, sum(isnull(a.assess_val_a,0))/10000000 as assess_val_a, sum(isnull(a.duty_a,0))/10000000 as duty_a, sum(isnull(IGST_AMT_A,0))/10000000 as IGST_AMT_A, sum(isnull(GST_CESS_AMT_A,0))/10000000 as GST_CESS_AMT_A, sum(isnull(a.BCD_AMT_A,0))/10000000 as BCD_AMT_A, sum(isnull(a.CVD_AMT_A,0))/10000000 as CVD_AMT_A, sum(isnull(a.AD1_AMT_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Payable, sum(isnull(a.AD2_AMT_A,0))/10000000 as Special_Excise_Payable_CVD_Sch_II, sum(isnull(a.OTH_AMT_A,0))/10000000 as TTA_Payable, sum(isnull(a.CESS_AMT_A,0))/10000000 as Cess_Payable, sum(isnull(a.SCD_AMT_A,0))/10000000 as Special_Custom_Payable, sum(isnull(a.OTH1_AMT_A,0))/10000000 as Education_Cess_Payable, sum(isnull(a.ADD_AMT_A,0))/10000000 as NCCD_Payable, sum(isnull(a.AND_AMT_A,0))/10000000 as Antidumping_Payable, sum(isnull(a.ECENVATAMT_A,0))/10000000 as ECENVATAMT, sum(isnull(a.OTH_CUS_AMT_A,0))/10000000 as OTH_CUS_AMT, sum(isnull(a.CVD05_AMT_A,0))/10000000 as CVD05_Payable, sum(isnull(a.HLTH_AMT_A,0))/10000000 as  Health_Cess_Duty_Payable, sum(isnull(a.SAFG_AMT_A,0))/10000000 as  Safeguard_Duty_Payable, sum(isnull(a.SHEDU_AMT_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Payable, sum(isnull(a.DUTY_FG_A,0))/10000000 as Total_Duty_Foregone, sum(isnull(a.BCD_AMT_FG_A,0))/10000000 as BCD_Foregone, sum(isnull(a.CVD_AMT_FG_A,0))/10000000 as CVD_Foregone, sum(isnull(a.AD1_AMT_FG_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Foregone, sum(isnull(a.AD2_AMT_FG_A,0))/10000000 as  Special_Excise_Duty_Foregone, sum(isnull(a.OTH_AMT_FG_A,0))/10000000 as  TTA_Foregone, sum(isnull(a.CESS_AMT_FG_A,0))/10000000 as Cess_Duty_Foregone, sum(isnull(a.SCD_AMT_FG_A,0))/10000000 as Special_Custom_Duty_Foregone, sum(isnull(a.OTH1_AMT_FG_A,0))/10000000 as Education_Cess_Foregone, sum(isnull(a.ADD_AMT_FG_A,0))/10000000 as NCCD_Foregone, sum(isnull(a.HLTH_AMT_FG_A,0))/10000000 as Health_Cess_Foregone, sum(isnull(a.SAPT_AMT_FG_A,0))/10000000 as SAPT_Foregone, sum(isnull(a.CVD05_AMT_FG_A,0))/10000000 as CVD05_Foregone, sum(isnull(a.SHEDU_AMT_FG_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Foregone, sum(isnull(a.DEPB_BCD_AMT_FG,0))/10000000 as DEPB_BCD_Amount_Foregone, SUM(isnull(a.DEPB_CVD_AMT_FG,0))/10000000 as DEPB_CVD_Amount_Foregone FROM DWUSER.FACT_IMP_BE_ITEM_DET_T A, DWUSER.FACT_IMP_BE_T B, WHERE A.DW_BE_KEY = B.DW_BE_KEY AND A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " AND TYP IN ('H','X') GROUP BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ORDER BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ")
+print("Writing data to output file for CTH2")
+
+cnt=0
+rno=4
+for r in cursor1:
+    cnt = cnt + 1
+    sheet2.write(rno, 0, cnt,cell_format)
+    for c in range(41):
+        if (c >= 0 and c <= 41):
+            
+            if(r[c]==None):
+                sheet2.write(rno, c+1, '--',Num_format)
+            else:
+                sheet2.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet2.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+     
+cursor1.close()
+cnxn.close()
+
+
+################## Create Data "Summary" Worksheet for CTH4
+sheet3 = wb.add_worksheet('CTH4')
+
+sheet3.merge_range('A1:AP1', 'Imports(CTH 4digit) - Home Consumption & Ex-Bond- BCD Notification wise Duty Foregone for ' + FromMonth + '-' + FromYear   , title_format)
+sheet3.merge_range('A2:AP2', '(In Rs. Crore)', title_format)
+sheet3.merge_range('A3:G3', ' ', title_format)
+sheet3.merge_range('H3:Z3', 'Total Duty Payable', title_format)
+sheet3.merge_range('AA3:AP3', 'Total Duty Foregone', title_format)
+						 
+sheet3.write('A4:A4','S.No.',ColumnHead_format)
+sheet3.set_column(0, 0, 5)
+sheet3.write('B4:B4','BCD Notification',ColumnHead_format)
+sheet3.write('C4:C4','Serial Number',ColumnHead_format)
+sheet3.write('D4:D4','CTH [ 4 digit]',ColumnHead_format)
+sheet3.write('E4:E4','BE Type [H+X]',ColumnHead_format)
+sheet3.write('F4:F4','BCD Rate',ColumnHead_format)
+sheet3.write('G4:G4','Assessable Value',ColumnHead_format)
+sheet3.write('H4:H4','Total Duty Payable',ColumnHead_format)
+sheet3.write('I4:I4','IGST Amount',ColumnHead_format)
+sheet3.write('J4:J4','GST CESS Amount',ColumnHead_format)
+sheet3.write('K4:K4','BCD Payable',ColumnHead_format)
+sheet3.write('L4:L4','CVD Payable',ColumnHead_format)
+sheet3.write('M4:M4','GSIA (Goods of Special Importance Act) Payable',ColumnHead_format)
+sheet3.write('N4:N4','Special Excise Payable  (CVD Sch II)',ColumnHead_format)
+sheet3.write('O4:O4','TTA (Textile and Textile Articles) Payable',ColumnHead_format)
+sheet3.write('P4:P4','Cess Payable',ColumnHead_format)
+sheet3.write('Q4:Q4','Special Custom Payable',ColumnHead_format)
+sheet3.write('R4:R4','Education Cess Payable',ColumnHead_format)
+sheet3.write('S4:S4','NCCD Payable',ColumnHead_format)
+sheet3.write('T4:T4','Antidumping Payable',ColumnHead_format)
+sheet3.write('U4:U4','ECENVATAMT',ColumnHead_format)
+sheet3.write('V4:V4','OTH_CUS_AMT',ColumnHead_format)
+sheet3.write('W4:W4','CVD05 Payable',ColumnHead_format)
+sheet3.write('X4:X4','Health Cess Duty Payable',ColumnHead_format)
+sheet3.write('Y4:Y4','Safeguard Duty Payable',ColumnHead_format)
+sheet3.write('Z4:Z4','Secondary and Higher Education Cess Payable',ColumnHead_format)
+sheet3.write('AA4:AA4','Total Duty Foregone',ColumnHead_format)
+sheet3.write('AB4:AB4','BCD Foregone',ColumnHead_format)
+sheet3.write('AC4:AC4','CVD Foregone',ColumnHead_format)
+sheet3.write('AD4:AD4','GSIA (Goods of Special Importance Act) Foregone',ColumnHead_format)
+sheet3.write('AE4:AE4','Special Excise Duty Foregone',ColumnHead_format)
+sheet3.write('AF4:AF4','TTA (Textile and Textile Articles) Foregone',ColumnHead_format)
+sheet3.write('AG4:AG4','Cess Duty Foregone',ColumnHead_format)
+sheet3.write('AH4:AH4','Special Custom Duty Foregone',ColumnHead_format)
+sheet3.write('AI4:AI4','Education Cess Foregone',ColumnHead_format)
+sheet3.write('AJ4:AJ4','NCCD Foregone',ColumnHead_format)
+sheet3.write('AK4:AK4','Health Cess Foregone',ColumnHead_format)
+sheet3.write('AL4:AL4','SAPT Foregone',ColumnHead_format)
+sheet3.write('AM4:AM4','CVD05 Foregone',ColumnHead_format)
+sheet3.write('AN4:AN4','Secondary and Higher Education Cess Foregone',ColumnHead_format)
+sheet3.write('AO4:AO4','DEPB_BCD Amount Foregone',ColumnHead_format)
+sheet3.write('AP4:AP4','DEPB_CVD Amount Foregone',ColumnHead_format)							
+sheet3.set_column(1, 40, 9)
+
+print("Connecting to SmartView for CTH4")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query for CTH4")
+cursor1.execute("SELECT A.BCD_NOTN_A, A.BCD_NSNO_A, SUBSTRING(CTH_A,1,4) CTH_A, 'H+X' as BE_TYPE, A.BCD_RTA_A, sum(isnull(a.assess_val_a,0))/10000000 as assess_val_a, sum(isnull(a.duty_a,0))/10000000 as duty_a, sum(isnull(IGST_AMT_A,0))/10000000 as IGST_AMT_A, sum(isnull(GST_CESS_AMT_A,0))/10000000 as GST_CESS_AMT_A, sum(isnull(a.BCD_AMT_A,0))/10000000 as BCD_AMT_A, sum(isnull(a.CVD_AMT_A,0))/10000000 as CVD_AMT_A, sum(isnull(a.AD1_AMT_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Payable, sum(isnull(a.AD2_AMT_A,0))/10000000 as Special_Excise_Payable_CVD_Sch_II, sum(isnull(a.OTH_AMT_A,0))/10000000 as TTA_Payable, sum(isnull(a.CESS_AMT_A,0))/10000000 as Cess_Payable, sum(isnull(a.SCD_AMT_A,0))/10000000 as Special_Custom_Payable, sum(isnull(a.OTH1_AMT_A,0))/10000000 as Education_Cess_Payable, sum(isnull(a.ADD_AMT_A,0))/10000000 as NCCD_Payable, sum(isnull(a.AND_AMT_A,0))/10000000 as Antidumping_Payable, sum(isnull(a.ECENVATAMT_A,0))/10000000 as ECENVATAMT, sum(isnull(a.OTH_CUS_AMT_A,0))/10000000 as OTH_CUS_AMT, sum(isnull(a.CVD05_AMT_A,0))/10000000 as CVD05_Payable, sum(isnull(a.HLTH_AMT_A,0))/10000000 as  Health_Cess_Duty_Payable, sum(isnull(a.SAFG_AMT_A,0))/10000000 as  Safeguard_Duty_Payable, sum(isnull(a.SHEDU_AMT_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Payable, sum(isnull(a.DUTY_FG_A,0))/10000000 as Total_Duty_Foregone, sum(isnull(a.BCD_AMT_FG_A,0))/10000000 as BCD_Foregone, sum(isnull(a.CVD_AMT_FG_A,0))/10000000 as CVD_Foregone, sum(isnull(a.AD1_AMT_FG_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Foregone, sum(isnull(a.AD2_AMT_FG_A,0))/10000000 as  Special_Excise_Duty_Foregone, sum(isnull(a.OTH_AMT_FG_A,0))/10000000 as  TTA_Foregone, sum(isnull(a.CESS_AMT_FG_A,0))/10000000 as Cess_Duty_Foregone, sum(isnull(a.SCD_AMT_FG_A,0))/10000000 as Special_Custom_Duty_Foregone, sum(isnull(a.OTH1_AMT_FG_A,0))/10000000 as Education_Cess_Foregone, sum(isnull(a.ADD_AMT_FG_A,0))/10000000 as NCCD_Foregone, sum(isnull(a.HLTH_AMT_FG_A,0))/10000000 as Health_Cess_Foregone, sum(isnull(a.SAPT_AMT_FG_A,0))/10000000 as SAPT_Foregone, sum(isnull(a.CVD05_AMT_FG_A,0))/10000000 as CVD05_Foregone, sum(isnull(a.SHEDU_AMT_FG_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Foregone, sum(isnull(a.DEPB_BCD_AMT_FG,0))/10000000 as DEPB_BCD_Amount_Foregone, SUM(isnull(a.DEPB_CVD_AMT_FG,0))/10000000 as DEPB_CVD_Amount_Foregone FROM DWUSER.FACT_IMP_BE_ITEM_DET_T A, DWUSER.FACT_IMP_BE_T B, WHERE A.DW_BE_KEY = B.DW_BE_KEY AND A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " AND TYP IN ('H','X') GROUP BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ORDER BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ")
+print("Writing data to output file for CTH4")
+
+cnt=0
+rno=4
+for r in cursor1:
+    cnt = cnt + 1
+    sheet3.write(rno, 0, cnt,cell_format)
+    for c in range(41):
+        if (c >= 0 and c <= 41):
+            
+            if(r[c]==None):
+                sheet3.write(rno, c+1, '--',Num_format)
+            else:
+                sheet3.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet3.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+     
+cursor1.close()
+cnxn.close()
+
+
+
+################## Create Data "Summary" Worksheet for CTH6
+sheet4 = wb.add_worksheet('CTH6')
+
+sheet4.merge_range('A1:AP1', 'Imports(CTH 6digit) - Home Consumption & Ex-Bond- BCD Notification wise Duty Foregone for ' + FromMonth + '-' + FromYear   , title_format)
+sheet4.merge_range('A2:AP2', '(In Rs. Crore)', title_format)
+sheet4.merge_range('A3:G3', ' ', title_format)
+sheet4.merge_range('H3:Z3', 'Total Duty Payable', title_format)
+sheet4.merge_range('AA3:AP3', 'Total Duty Foregone', title_format)
+						 
+sheet4.write('A4:A4','S.No.',ColumnHead_format)
+sheet4.set_column(0, 0, 5)
+sheet4.write('B4:B4','BCD Notification',ColumnHead_format)
+sheet4.write('C4:C4','Serial Number',ColumnHead_format)
+sheet4.write('D4:D4','CTH [ 6 digit]',ColumnHead_format)
+sheet4.write('E4:E4','BE Type [H+X]',ColumnHead_format)
+sheet4.write('F4:F4','BCD Rate',ColumnHead_format)
+sheet4.write('G4:G4','Assessable Value',ColumnHead_format)
+sheet4.write('H4:H4','Total Duty Payable',ColumnHead_format)
+sheet4.write('I4:I4','IGST Amount',ColumnHead_format)
+sheet4.write('J4:J4','GST CESS Amount',ColumnHead_format)
+sheet4.write('K4:K4','BCD Payable',ColumnHead_format)
+sheet4.write('L4:L4','CVD Payable',ColumnHead_format)
+sheet4.write('M4:M4','GSIA (Goods of Special Importance Act) Payable',ColumnHead_format)
+sheet4.write('N4:N4','Special Excise Payable  (CVD Sch II)',ColumnHead_format)
+sheet4.write('O4:O4','TTA (Textile and Textile Articles) Payable',ColumnHead_format)
+sheet4.write('P4:P4','Cess Payable',ColumnHead_format)
+sheet4.write('Q4:Q4','Special Custom Payable',ColumnHead_format)
+sheet4.write('R4:R4','Education Cess Payable',ColumnHead_format)
+sheet4.write('S4:S4','NCCD Payable',ColumnHead_format)
+sheet4.write('T4:T4','Antidumping Payable',ColumnHead_format)
+sheet4.write('U4:U4','ECENVATAMT',ColumnHead_format)
+sheet4.write('V4:V4','OTH_CUS_AMT',ColumnHead_format)
+sheet4.write('W4:W4','CVD05 Payable',ColumnHead_format)
+sheet4.write('X4:X4','Health Cess Duty Payable',ColumnHead_format)
+sheet4.write('Y4:Y4','Safeguard Duty Payable',ColumnHead_format)
+sheet4.write('Z4:Z4','Secondary and Higher Education Cess Payable',ColumnHead_format)
+sheet4.write('AA4:AA4','Total Duty Foregone',ColumnHead_format)
+sheet4.write('AB4:AB4','BCD Foregone',ColumnHead_format)
+sheet4.write('AC4:AC4','CVD Foregone',ColumnHead_format)
+sheet4.write('AD4:AD4','GSIA (Goods of Special Importance Act) Foregone',ColumnHead_format)
+sheet4.write('AE4:AE4','Special Excise Duty Foregone',ColumnHead_format)
+sheet4.write('AF4:AF4','TTA (Textile and Textile Articles) Foregone',ColumnHead_format)
+sheet4.write('AG4:AG4','Cess Duty Foregone',ColumnHead_format)
+sheet4.write('AH4:AH4','Special Custom Duty Foregone',ColumnHead_format)
+sheet4.write('AI4:AI4','Education Cess Foregone',ColumnHead_format)
+sheet4.write('AJ4:AJ4','NCCD Foregone',ColumnHead_format)
+sheet4.write('AK4:AK4','Health Cess Foregone',ColumnHead_format)
+sheet4.write('AL4:AL4','SAPT Foregone',ColumnHead_format)
+sheet4.write('AM4:AM4','CVD05 Foregone',ColumnHead_format)
+sheet4.write('AN4:AN4','Secondary and Higher Education Cess Foregone',ColumnHead_format)
+sheet4.write('AO4:AO4','DEPB_BCD Amount Foregone',ColumnHead_format)
+sheet4.write('AP4:AP4','DEPB_CVD Amount Foregone',ColumnHead_format)							
+sheet4.set_column(1, 40, 9)
+
+print("Connecting to SmartView for CTH6")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query for CTH6")
+cursor1.execute("SELECT A.BCD_NOTN_A, A.BCD_NSNO_A, SUBSTRING(CTH_A,1,6) CTH_A, 'H+X' as BE_TYPE, A.BCD_RTA_A, sum(isnull(a.assess_val_a,0))/10000000 as assess_val_a, sum(isnull(a.duty_a,0))/10000000 as duty_a, sum(isnull(IGST_AMT_A,0))/10000000 as IGST_AMT_A, sum(isnull(GST_CESS_AMT_A,0))/10000000 as GST_CESS_AMT_A, sum(isnull(a.BCD_AMT_A,0))/10000000 as BCD_AMT_A, sum(isnull(a.CVD_AMT_A,0))/10000000 as CVD_AMT_A, sum(isnull(a.AD1_AMT_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Payable, sum(isnull(a.AD2_AMT_A,0))/10000000 as Special_Excise_Payable_CVD_Sch_II, sum(isnull(a.OTH_AMT_A,0))/10000000 as TTA_Payable, sum(isnull(a.CESS_AMT_A,0))/10000000 as Cess_Payable, sum(isnull(a.SCD_AMT_A,0))/10000000 as Special_Custom_Payable, sum(isnull(a.OTH1_AMT_A,0))/10000000 as Education_Cess_Payable, sum(isnull(a.ADD_AMT_A,0))/10000000 as NCCD_Payable, sum(isnull(a.AND_AMT_A,0))/10000000 as Antidumping_Payable, sum(isnull(a.ECENVATAMT_A,0))/10000000 as ECENVATAMT, sum(isnull(a.OTH_CUS_AMT_A,0))/10000000 as OTH_CUS_AMT, sum(isnull(a.CVD05_AMT_A,0))/10000000 as CVD05_Payable, sum(isnull(a.HLTH_AMT_A,0))/10000000 as  Health_Cess_Duty_Payable, sum(isnull(a.SAFG_AMT_A,0))/10000000 as  Safeguard_Duty_Payable, sum(isnull(a.SHEDU_AMT_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Payable, sum(isnull(a.DUTY_FG_A,0))/10000000 as Total_Duty_Foregone, sum(isnull(a.BCD_AMT_FG_A,0))/10000000 as BCD_Foregone, sum(isnull(a.CVD_AMT_FG_A,0))/10000000 as CVD_Foregone, sum(isnull(a.AD1_AMT_FG_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Foregone, sum(isnull(a.AD2_AMT_FG_A,0))/10000000 as  Special_Excise_Duty_Foregone, sum(isnull(a.OTH_AMT_FG_A,0))/10000000 as  TTA_Foregone, sum(isnull(a.CESS_AMT_FG_A,0))/10000000 as Cess_Duty_Foregone, sum(isnull(a.SCD_AMT_FG_A,0))/10000000 as Special_Custom_Duty_Foregone, sum(isnull(a.OTH1_AMT_FG_A,0))/10000000 as Education_Cess_Foregone, sum(isnull(a.ADD_AMT_FG_A,0))/10000000 as NCCD_Foregone, sum(isnull(a.HLTH_AMT_FG_A,0))/10000000 as Health_Cess_Foregone, sum(isnull(a.SAPT_AMT_FG_A,0))/10000000 as SAPT_Foregone, sum(isnull(a.CVD05_AMT_FG_A,0))/10000000 as CVD05_Foregone, sum(isnull(a.SHEDU_AMT_FG_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Foregone, sum(isnull(a.DEPB_BCD_AMT_FG,0))/10000000 as DEPB_BCD_Amount_Foregone, SUM(isnull(a.DEPB_CVD_AMT_FG,0))/10000000 as DEPB_CVD_Amount_Foregone FROM DWUSER.FACT_IMP_BE_ITEM_DET_T A, DWUSER.FACT_IMP_BE_T B, WHERE A.DW_BE_KEY = B.DW_BE_KEY AND A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " AND TYP IN ('H','X') GROUP BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ORDER BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ")
+print("Writing data to output file for CTH6")
+
+cnt=0
+rno=4
+for r in cursor1:
+    cnt = cnt + 1
+    sheet4.write(rno, 0, cnt,cell_format)
+    for c in range(41):
+        if (c >= 0 and c <= 41):
+            
+            if(r[c]==None):
+                sheet4.write(rno, c+1, '--',Num_format)
+            else:
+                sheet4.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet4.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+     
+#input("Press Enter to continue...")
+cursor1.close()
+cnxn.close()
+
+
+################## Create Data "Summary" Worksheet for CTH8
+sheet5 = wb.add_worksheet('CTH8')
+
+sheet5.merge_range('A1:AP1', 'Imports(CTH 8digit) - Home Consumption & Ex-Bond- BCD Notification wise Duty Foregone for ' + FromMonth + '-' + FromYear   , title_format)
+sheet5.merge_range('A2:AP2', '(In Rs. Crore)', title_format)
+sheet5.merge_range('A3:G3', ' ', title_format)
+sheet5.merge_range('H3:Z3', 'Total Duty Payable', title_format)
+sheet5.merge_range('AA3:AP3', 'Total Duty Foregone', title_format)
+						 
+sheet5.write('A4:A4','S.No.',ColumnHead_format)
+sheet5.set_column(0, 0, 5)
+sheet5.write('B4:B4','BCD Notification',ColumnHead_format)
+sheet5.write('C4:C4','Serial Number',ColumnHead_format)
+sheet5.write('D4:D4','CTH [ 8 digit]',ColumnHead_format)
+sheet5.write('E4:E4','BE Type [H+X]',ColumnHead_format)
+sheet5.write('F4:F4','BCD Rate',ColumnHead_format)
+sheet5.write('G4:G4','Assessable Value',ColumnHead_format)
+sheet5.write('H4:H4','Total Duty Payable',ColumnHead_format)
+sheet5.write('I4:I4','IGST Amount',ColumnHead_format)
+sheet5.write('J4:J4','GST CESS Amount',ColumnHead_format)
+sheet5.write('K4:K4','BCD Payable',ColumnHead_format)
+sheet5.write('L4:L4','CVD Payable',ColumnHead_format)
+sheet5.write('M4:M4','GSIA (Goods of Special Importance Act) Payable',ColumnHead_format)
+sheet5.write('N4:N4','Special Excise Payable  (CVD Sch II)',ColumnHead_format)
+sheet5.write('O4:O4','TTA (Textile and Textile Articles) Payable',ColumnHead_format)
+sheet5.write('P4:P4','Cess Payable',ColumnHead_format)
+sheet5.write('Q4:Q4','Special Custom Payable',ColumnHead_format)
+sheet5.write('R4:R4','Education Cess Payable',ColumnHead_format)
+sheet5.write('S4:S4','NCCD Payable',ColumnHead_format)
+sheet5.write('T4:T4','Antidumping Payable',ColumnHead_format)
+sheet5.write('U4:U4','ECENVATAMT',ColumnHead_format)
+sheet5.write('V4:V4','OTH_CUS_AMT',ColumnHead_format)
+sheet5.write('W4:W4','CVD05 Payable',ColumnHead_format)
+sheet5.write('X4:X4','Health Cess Duty Payable',ColumnHead_format)
+sheet5.write('Y4:Y4','Safeguard Duty Payable',ColumnHead_format)
+sheet5.write('Z4:Z4','Secondary and Higher Education Cess Payable',ColumnHead_format)
+sheet5.write('AA4:AA4','Total Duty Foregone',ColumnHead_format)
+sheet5.write('AB4:AB4','BCD Foregone',ColumnHead_format)
+sheet5.write('AC4:AC4','CVD Foregone',ColumnHead_format)
+sheet5.write('AD4:AD4','GSIA (Goods of Special Importance Act) Foregone',ColumnHead_format)
+sheet5.write('AE4:AE4','Special Excise Duty Foregone',ColumnHead_format)
+sheet5.write('AF4:AF4','TTA (Textile and Textile Articles) Foregone',ColumnHead_format)
+sheet5.write('AG4:AG4','Cess Duty Foregone',ColumnHead_format)
+sheet5.write('AH4:AH4','Special Custom Duty Foregone',ColumnHead_format)
+sheet5.write('AI4:AI4','Education Cess Foregone',ColumnHead_format)
+sheet5.write('AJ4:AJ4','NCCD Foregone',ColumnHead_format)
+sheet5.write('AK4:AK4','Health Cess Foregone',ColumnHead_format)
+sheet5.write('AL4:AL4','SAPT Foregone',ColumnHead_format)
+sheet5.write('AM4:AM4','CVD05 Foregone',ColumnHead_format)
+sheet5.write('AN4:AN4','Secondary and Higher Education Cess Foregone',ColumnHead_format)
+sheet5.write('AO4:AO4','DEPB_BCD Amount Foregone',ColumnHead_format)
+sheet5.write('AP4:AP4','DEPB_CVD Amount Foregone',ColumnHead_format)							
+sheet5.set_column(1, 40, 9)
+
+print("Connecting to SmartView for CTH8")
+cnxn = pyodbc.connect("DSN=smartview_w1")
+cursor1 = cnxn.cursor()
+print("Running query for CTH8")
+cursor1.execute("SELECT A.BCD_NOTN_A, A.BCD_NSNO_A, CTH_A, 'H+X' as BE_TYPE, A.BCD_RTA_A, sum(isnull(a.assess_val_a,0))/10000000 as assess_val_a, sum(isnull(a.duty_a,0))/10000000 as duty_a, sum(isnull(IGST_AMT_A,0))/10000000 as IGST_AMT_A, sum(isnull(GST_CESS_AMT_A,0))/10000000 as GST_CESS_AMT_A, sum(isnull(a.BCD_AMT_A,0))/10000000 as BCD_AMT_A, sum(isnull(a.CVD_AMT_A,0))/10000000 as CVD_AMT_A, sum(isnull(a.AD1_AMT_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Payable, sum(isnull(a.AD2_AMT_A,0))/10000000 as Special_Excise_Payable_CVD_Sch_II, sum(isnull(a.OTH_AMT_A,0))/10000000 as TTA_Payable, sum(isnull(a.CESS_AMT_A,0))/10000000 as Cess_Payable, sum(isnull(a.SCD_AMT_A,0))/10000000 as Special_Custom_Payable, sum(isnull(a.OTH1_AMT_A,0))/10000000 as Education_Cess_Payable, sum(isnull(a.ADD_AMT_A,0))/10000000 as NCCD_Payable, sum(isnull(a.AND_AMT_A,0))/10000000 as Antidumping_Payable, sum(isnull(a.ECENVATAMT_A,0))/10000000 as ECENVATAMT, sum(isnull(a.OTH_CUS_AMT_A,0))/10000000 as OTH_CUS_AMT, sum(isnull(a.CVD05_AMT_A,0))/10000000 as CVD05_Payable, sum(isnull(a.HLTH_AMT_A,0))/10000000 as  Health_Cess_Duty_Payable, sum(isnull(a.SAFG_AMT_A,0))/10000000 as  Safeguard_Duty_Payable, sum(isnull(a.SHEDU_AMT_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Payable, sum(isnull(a.DUTY_FG_A,0))/10000000 as Total_Duty_Foregone, sum(isnull(a.BCD_AMT_FG_A,0))/10000000 as BCD_Foregone, sum(isnull(a.CVD_AMT_FG_A,0))/10000000 as CVD_Foregone, sum(isnull(a.AD1_AMT_FG_A,0))/10000000 as GSIA_Goods_of_Special_Importance_Act_Foregone, sum(isnull(a.AD2_AMT_FG_A,0))/10000000 as  Special_Excise_Duty_Foregone, sum(isnull(a.OTH_AMT_FG_A,0))/10000000 as  TTA_Foregone, sum(isnull(a.CESS_AMT_FG_A,0))/10000000 as Cess_Duty_Foregone, sum(isnull(a.SCD_AMT_FG_A,0))/10000000 as Special_Custom_Duty_Foregone, sum(isnull(a.OTH1_AMT_FG_A,0))/10000000 as Education_Cess_Foregone, sum(isnull(a.ADD_AMT_FG_A,0))/10000000 as NCCD_Foregone, sum(isnull(a.HLTH_AMT_FG_A,0))/10000000 as Health_Cess_Foregone, sum(isnull(a.SAPT_AMT_FG_A,0))/10000000 as SAPT_Foregone, sum(isnull(a.CVD05_AMT_FG_A,0))/10000000 as CVD05_Foregone, sum(isnull(a.SHEDU_AMT_FG_A,0))/10000000 as Secondary_and_Higher_Education_Cess_Foregone, sum(isnull(a.DEPB_BCD_AMT_FG,0))/10000000 as DEPB_BCD_Amount_Foregone, SUM(isnull(a.DEPB_CVD_AMT_FG,0))/10000000 as DEPB_CVD_Amount_Foregone FROM DWUSER.FACT_IMP_BE_ITEM_DET_T A, DWUSER.FACT_IMP_BE_T B, WHERE A.DW_BE_KEY = B.DW_BE_KEY AND A.OOC_DT_KEY BETWEEN " +From_dt+  " AND "+To_dt+ " AND TYP IN ('H','X') GROUP BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ORDER BY A.BCD_NOTN_A,A.BCD_NSNO_A,CTH_A,A.BCD_RTA_A ")
+print("Writing data to output file for CTH8")
+
+cnt=0
+rno=4
+for r in cursor1:
+    cnt = cnt + 1
+    sheet5.write(rno, 0, cnt,cell_format)
+    for c in range(41):
+        if (c >= 0 and c <= 41):
+            
+            if(r[c]==None):
+                sheet5.write(rno, c+1, '--',Num_format)
+            else:
+                sheet5.write(rno, c+1, r[c],Num_format)
+        else:
+            sheet5.write(rno, c+1, r[c],cell_format)
+    rno = rno + 1
+     
+
+cursor1.close()
+cnxn.close()
+wb.close()
+
+print("End of Run")
+
+
+
+
+
+
+
+
+
+
